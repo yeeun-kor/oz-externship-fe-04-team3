@@ -33,3 +33,9 @@ export const getRecruitments = async (params: {
   )
   return response.data
 }
+
+// 스터디 공고 상세 조회
+export const getRecruitmentDetail = async (id: string) => {
+  const response = await axiosInstance.get(`/api/recruitments/${id}`)
+  return response.data
+}

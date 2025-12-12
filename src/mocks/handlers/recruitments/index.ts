@@ -42,4 +42,15 @@ export const recruitmentHandlers = [
 
     return HttpResponse.json(result)
   }),
+
+  http.get('/api/recruitments/:id', ({ params }) => {
+    const { id } = params
+    const recruitment = mockRecruitments.find((r) => r.id === Number(id))
+
+    if (!recruitment) {
+      return new HttpResponse(null, { status: 404 })
+    }
+
+    return HttpResponse.json(recruitment)
+  }),
 ]
