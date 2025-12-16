@@ -29,13 +29,17 @@ export const getRecruitments = async (params: {
   if (params.sort) queryParams.append('sort', params.sort)
 
   const response = await axiosInstance.get(
-    `/api/recruitments?${queryParams.toString()}`
+    `/recruitments?${queryParams.toString()}`
   )
   return response.data
 }
 
 // 스터디 공고 상세 조회
 export const getRecruitmentDetail = async (id: string) => {
-  const response = await axiosInstance.get(`/api/recruitments/${id}`)
-  return response.data
+  const res = await axiosInstance.get(`/recruitments/${id}`)
+  return res.data
+}
+
+export const incrementRecruitmentViews = async (id: string) => {
+  await axiosInstance.post(`/recruitments/${id}/views`)
 }

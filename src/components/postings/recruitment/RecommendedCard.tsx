@@ -58,8 +58,8 @@ export default function RecommendedCard({ recruitment, onClick }: Props) {
               강의 목록 :
             </p>
             <ul className="space-y-0.5 text-xs text-gray-600">
-              {lectures.map((lec, i) => (
-                <li key={i}>• {lec}</li>
+              {lectures.map((lec) => (
+                <li key={lec.id}>• {lec.title}</li>
               ))}
             </ul>
           </div>

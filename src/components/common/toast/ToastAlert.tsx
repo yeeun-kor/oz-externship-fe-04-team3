@@ -53,7 +53,7 @@ export const ToastAlert = ({
         config.containerClass
       )}
     >
-      <div className="flex-shrink-0 pt-0.5">
+      <div className="shrink-0 pt-0.5">
         <Icon className={cn('h-5 w-5', config.iconClass)} />
       </div>
       <div className="flex-1 space-y-1">
@@ -72,7 +72,7 @@ export const ToastAlert = ({
 
       <button
         onClick={closeToast}
-        className={cn('flex-shrink-0 transition-colors', config.buttonClass)}
+        className={cn('shrink-0 transition-colors', config.buttonClass)}
       >
         <XIcon className="h-4 w-4" />
       </button>
