@@ -7,6 +7,9 @@ import DetailHeader from '@/components/postings/detail/DetailHeader'
 import DetailInfo from '@/components/postings/detail/DetailInfo'
 import DetailContent from '@/components/postings/detail/DetailContent'
 import DetailActions from '@/components/postings/detail/DetailActions'
+import Modal from '@/components/common/Modal'
+import ApplicationForm from '@/components/postings/recruitment/ApplicationForm'
+import { ToastAlert } from '@/components/common/toast/ToastAlert'
 
 export default function RecruitmentDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +17,9 @@ export default function RecruitmentDetailPage() {
   const [recruitment, setRecruitment] = useState<Recruitment | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
   const loginState = loginStateStore((state) => state.loginState)
 
   const currentUserId = 1
@@ -48,6 +54,15 @@ export default function RecruitmentDetailPage() {
     fetchDetail()
   }, [id, navigate, loginState])
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showToast])
+
   const handleBack = () => {
     navigate(-1)
   }
@@ -57,7 +72,13 @@ export default function RecruitmentDetailPage() {
   }
 
   const handleApply = () => {
-    return
+    setIsApplicationModalOpen(true)
+  }
+
+  const handleApplicationSuccess = () => {
+    setIsApplicationModalOpen(false)
+    setToastType('success')
+    setShowToast(true)
   }
 
   if (id && isNaN(Number(id))) {
@@ -67,7 +88,7 @@ export default function RecruitmentDetailPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg text-gray-600">로딩 중...</div>
+        <div className="text-lg text-gray-600">로딩 중</div>
       </div>
     )
   }
@@ -108,6 +129,34 @@ export default function RecruitmentDetailPage() {
           onShare={() => {}}
         />
       </div>
+
+      <Modal
+        open={isApplicationModalOpen}
+        onOpenChange={setIsApplicationModalOpen}
+        title="스터디 지원서 작성"
+        content={
+          <ApplicationForm
+            recruitmentId={Number(id)}
+            onSuccess={handleApplicationSuccess}
+            onCancel={() => setIsApplicationModalOpen(false)}
+          />
+        }
+      />
+
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 w-96">
+          <ToastAlert
+            type={toastType}
+            title={toastType === 'success' ? '지원 완료' : '지원 실패'}
+            message={
+              toastType === 'success'
+                ? '지원서가 성공적으로 제출되었습니다!'
+                : '지원서 제출에 실패했습니다. 다시 시도해주세요.'
+            }
+            closeToast={() => setShowToast(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }
