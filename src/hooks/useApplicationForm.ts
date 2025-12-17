@@ -52,8 +52,6 @@ export function useApplicationForm(recruitmentId: number) {
       setIsSubmitting(true)
       await postApplication(recruitmentId, formData)
       return true
-    } catch {
-      return false
     } finally {
       setIsSubmitting(false)
     }
