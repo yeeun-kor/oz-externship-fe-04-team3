@@ -4,6 +4,7 @@ import { Button } from '@/components/common'
 interface ApplicationFormProps {
   recruitmentId: number
   onSuccess?: () => void
+  onError?: () => void
   onCancel?: () => void
 }
 
@@ -50,15 +51,22 @@ function TextareaWithCounter({
 export default function ApplicationForm({
   recruitmentId,
   onSuccess,
+  onError,
   onCancel,
 }: ApplicationFormProps) {
   const { formData, errors, isSubmitting, updateField, handleSubmit } =
     useApplicationForm(recruitmentId)
 
   const onSubmit = async (e: React.FormEvent) => {
-    const success = await handleSubmit(e)
-    if (success && onSuccess) {
-      onSuccess()
+    try {
+      const success = await handleSubmit(e)
+      if (success && onSuccess) {
+        onSuccess()
+      }
+    } catch {
+      if (onError) {
+        onError()
+      }
     }
   }
 
