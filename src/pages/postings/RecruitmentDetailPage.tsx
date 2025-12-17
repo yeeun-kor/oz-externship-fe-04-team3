@@ -81,6 +81,12 @@ export default function RecruitmentDetailPage() {
     setShowToast(true)
   }
 
+  const handleApplicationError = () => {
+    setIsApplicationModalOpen(false)
+    setToastType('error')
+    setShowToast(true)
+  }
+
   if (id && isNaN(Number(id))) {
     return <Navigate to="/recruitments" replace />
   }
@@ -88,7 +94,7 @@ export default function RecruitmentDetailPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg text-gray-600">로딩 중</div>
+        <div className="text-lg text-gray-600">로딩 중...</div>
       </div>
     )
   }
@@ -134,10 +140,12 @@ export default function RecruitmentDetailPage() {
         open={isApplicationModalOpen}
         onOpenChange={setIsApplicationModalOpen}
         title="스터디 지원서 작성"
+        contentClassName="sm:min-w-[600px] sm:!max-w-[900px]"
         content={
           <ApplicationForm
             recruitmentId={Number(id)}
             onSuccess={handleApplicationSuccess}
+            onError={handleApplicationError}
             onCancel={() => setIsApplicationModalOpen(false)}
           />
         }
