@@ -5,6 +5,7 @@ import { recruitmentHandlers as myRecruitmentHandlers } from './handlers/myRecru
 import { notificationHandlers } from './handlers/notification'
 import { recruitmentHandlers } from './handlers/recruitments'
 import { recruitmentCreateHandler } from './handlers/recruitments/createRecruitment'
+import { applyRecruitmentHandler } from './handlers/recruitments/applyRecruitment'
 import { studyGroupHandlers } from './handlers/studyGroups'
 import { userInformationHandler } from './handlers/user'
 import { uploadsHandlers } from './handlers/uploads'
@@ -35,6 +36,8 @@ export const handlers = [
   ...bookmarkHandlers,
   // 업로드 presigned URL 핸들러
   ...uploadsHandlers,
+  // 공고 지원 모달 핸들러
+  ...applyRecruitmentHandler,
 
   http.get('/api/users', () => {
     return HttpResponse.json(users)
