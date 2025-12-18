@@ -16,7 +16,7 @@ const fetchNotifications = async (filter: FilterKey) => {
 
   try {
     const { data } = await axiosInstance.get<NotificationListResponse>(
-      '/api/v1/notifications',
+      '/v1/notifications',
       {
         params: {
           page_size: 10,
@@ -57,10 +57,10 @@ export const useNotifications = (filter: FilterKey) =>
 
 export const useNotificationActions = () => {
   // 전체 읽기 요청
-  const markAllRead = () => axiosInstance.post('/api/v1/notifications/read-all')
+  const markAllRead = () => axiosInstance.post('/v1/notifications/read-all')
   // 개별 읽기 요청
   const markRead = (id: string | number) =>
-    axiosInstance.post(`/api/v1/notifications/${id}/read`)
+    axiosInstance.post(`/v1/notifications/${id}/read`)
 
   return { markAllRead, markRead }
 }

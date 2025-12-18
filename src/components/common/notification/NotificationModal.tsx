@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
 import { motion, useAnimation } from 'framer-motion'
 
 import {
@@ -25,23 +24,16 @@ export default function NotificationModal({
   )
   const { data, isLoading, error, refetch } = useNotifications(activeFilter)
   const { markAllRead, markRead } = useNotificationActions()
-  const navigate = useNavigate()
   const alarms = data?.alarms ?? []
   const errorMessage = error ? error.message : null
   const totalCount = data?.totalCount ?? 0
   const unreadCount = data?.unreadCount ?? 0
   const readCount = totalCount - unreadCount
   const controls = useAnimation()
-  const originalOverflow = useRef<string>('')
 
-  // 모달이 열려있는 동안 배경 스크롤 잠금 + 진입 위치 초기화
+  // 진입 위치 초기화
   useEffect(() => {
-    originalOverflow.current = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     controls.start({ y: 0, opacity: 1 })
-    return () => {
-      document.body.style.overflow = originalOverflow.current
-    }
   }, [controls])
 
   const filterOptions = [
@@ -76,7 +68,7 @@ export default function NotificationModal({
             }
       }
       onAnimationComplete={onAnimationComplete}
-      className="fixed inset-x-0 bottom-0 z-50 h-[70dvh] w-full overflow-hidden rounded-t-2xl border border-gray-200 bg-white pb-[45px] shadow-[0_-10px_30px_rgba(0,0,0,0.14)] md:absolute md:inset-auto md:top-10 md:right-0 md:h-[475px] md:w-[384px] md:rounded-lg md:shadow-xl"
+      className="fixed inset-x-0 bottom-0 z-50 h-fit max-h-[70dvh] w-full overflow-hidden rounded-t-2xl border border-gray-200 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.14)] md:absolute md:inset-auto md:top-10 md:right-0 md:max-h-[475px] md:w-[384px] md:rounded-lg md:shadow-xl"
     >
       <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-gray-200 md:hidden" />
       <div className="flex-between h-[60px] border-b border-gray-100 px-4">
@@ -144,10 +136,8 @@ export default function NotificationModal({
                   iconType={alarm.iconType}
                   onClick={() => {
                     // 개별 읽기 요청 후 목록 새로고침
-                    // TODO: 백엔드에서 내려주는 back_url_link로 이동시키기
                     markRead(alarm.id).finally(() => {
                       refetch()
-                      navigate('/')
                     })
                   }}
                 />
@@ -155,6 +145,7 @@ export default function NotificationModal({
           </>
         )}
       </div>
+      <div className="h-[45px] border-t border-gray-200 bg-gray-50"></div>
     </motion.div>
   )
 }

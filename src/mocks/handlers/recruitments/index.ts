@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { mockRecruitments, filterByCategory } from '@/mocks/recruitmentData'
 
 export const recruitmentHandlers = [
-  http.get('/api/recruitments', ({ request }) => {
+  http.get('http://localhost:5173/api/recruitments', ({ request }) => {
     const url = new URL(request.url)
     const search = url.searchParams.get('search') || ''
     const category = url.searchParams.get('category') || '전체 카테고리'
@@ -42,4 +42,31 @@ export const recruitmentHandlers = [
 
     return HttpResponse.json(result)
   }),
+
+  http.get('http://localhost:5173/api/recruitments/:id', ({ params }) => {
+    const { id } = params
+    const recruitment = mockRecruitments.find((r) => r.id === Number(id))
+
+    if (!recruitment) {
+      return new HttpResponse(null, { status: 404 })
+    }
+
+    return HttpResponse.json(recruitment)
+  }),
+
+  http.post(
+    'http://localhost:5173/api/recruitments/:id/views',
+    ({ params }) => {
+      const { id } = params
+      const recruitment = mockRecruitments.find((r) => r.id === Number(id))
+
+      if (!recruitment) {
+        return new HttpResponse(null, { status: 404 })
+      }
+
+      recruitment.views += 1
+
+      return HttpResponse.json({ success: true, views: recruitment.views })
+    }
+  ),
 ]

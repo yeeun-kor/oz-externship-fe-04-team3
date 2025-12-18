@@ -3,6 +3,8 @@ import CoursesPage from '@/pages/CoursesPage'
 import Main from '@/pages/main'
 import ManagePage from '@/pages/postings/Manage'
 import RecruitmentListPage from '@/pages/postings/RecruitmentListPage'
+import RecruitmentDetailPage from '@/pages/postings/RecruitmentDetailPage'
+import ProtectedRoute from '@/components/common/ProtectedRoute'
 import WritePage from '@/pages/postings/Write'
 import YeeunTest from '@/pages/YeeunTest'
 import { useAuthStore } from '@/store/userStore'
@@ -30,12 +32,10 @@ function AppRoutes() {
         <Route path="/manage" element={<ManagePage />} />
         <Route path="/write" element={<WritePage />} />
         <Route path="/main" element={<Main />} />
-
         <Route
           path="/recruitments"
           element={<RecruitmentListPage isLoggedIn={false} userName="사용자" />}
         />
-
         <Route
           path="/recruitments/test"
           element={
@@ -43,6 +43,15 @@ function AppRoutes() {
               isLoggedIn={loginState === 'USER'}
               userName={user?.name}
             />
+          }
+        />
+
+        <Route
+          path="/recruitments/:id"
+          element={
+            <ProtectedRoute>
+              <RecruitmentDetailPage />
+            </ProtectedRoute>
           }
         />
       </Route>

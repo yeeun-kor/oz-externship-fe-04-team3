@@ -1,10 +1,12 @@
 import PublicBanner from '@/components/postings/recruitment/PublicBanner'
 import RecommendedSection from '@/components/postings/recruitment/RecommendedSection'
 import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
+import Modal from '@/components/common/Modal'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
 import { ArrowUp, Plus, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/common/Button'
 
 interface RecruitmentListPageProps {
   isLoggedIn?: boolean
@@ -17,6 +19,10 @@ export default function RecruitmentListPage({
 }: RecruitmentListPageProps) {
   const navigate = useNavigate()
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [pendingRecruitmentId, setPendingRecruitmentId] = useState<
+    number | null
+  >(null)
 
   const {
     searchKeyword,
@@ -26,7 +32,6 @@ export default function RecruitmentListPage({
     displayedRecruitments,
     filteredAndSorted,
     hasMore,
-    isLoading,
     handleSearchChange,
     handleCategoryChange,
     handleSortChange,
@@ -40,7 +45,21 @@ export default function RecruitmentListPage({
   }, [])
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
-  const handleRecruitmentClick = (id: number) => navigate(`/recruitment/${id}`)
+
+  const handleRecruitmentClick = (id: number) => {
+    if (!isLoggedIn) {
+      setPendingRecruitmentId(id)
+      setShowLoginModal(true)
+    } else {
+      navigate(`/recruitments/${id}`)
+    }
+  }
+
+  const handleLogin = () => {
+    navigate('/login', {
+      state: { from: `/recruitments/${pendingRecruitmentId}` },
+    })
+  }
 
   const allCategories = [
     'AI/인공지능',
@@ -123,9 +142,7 @@ export default function RecruitmentListPage({
           전체 공고 ({filteredAndSorted.length})
         </h2>
 
-        {isLoading ? (
-          <div className="py-12 text-center">로딩 중...</div>
-        ) : filteredAndSorted.length === 0 ? (
+        {filteredAndSorted.length === 0 ? (
           <div className="py-12 text-center text-gray-500">
             검색 결과가 없습니다.
           </div>
@@ -165,6 +182,28 @@ export default function RecruitmentListPage({
           </button>
         )}
       </div>
+
+      <Modal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        title="로그인이 필요합니다"
+        description="스터디 공고 상세 내용을 보려면 로그인이 필요합니다."
+        content={
+          <div className="py-4 text-center">
+            <p className="text-gray-600">
+              로그인하고 다양한 스터디를 만나보세요!
+            </p>
+          </div>
+        }
+        footer={{
+          closeButton: { text: '취소' },
+          footerButtons: (
+            <Button variant="primary" onClick={handleLogin}>
+              로그인하러 가기
+            </Button>
+          ),
+        }}
+      />
     </div>
   )
 }
