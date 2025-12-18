@@ -3,7 +3,15 @@ import type { IconName } from '@/helpers/icons'
 
 export type NotificationApiItem = {
   id: number
-  type: string
+  type:
+    | 'STUDY_NOTE_CREATE'
+    | 'TODAY_SCHEDULE'
+    | 'UPCOMING_SCHEDULE'
+    | 'STUDY_JOIN'
+    | 'APPLICATION_CREATED'
+    | 'APPLICATION_ACCEPT'
+    | 'APPLICATION_REJECT'
+    | 'STUDY_REVIEW_REQUEST'
   content: string
   back_url_link: string
   is_read: boolean
@@ -12,8 +20,10 @@ export type NotificationApiItem = {
 
 export type NotificationListResponse = {
   results: NotificationApiItem[]
-  total_count: number
-  unread_count: number
+  next: string | null
+  previous: string | null
+  total_count?: number
+  unread_count?: number
 }
 
 // ISO 날짜 문자열을 "12월 1일" 형태로 포맷
@@ -59,5 +69,6 @@ export const alarmMapper = (item: NotificationApiItem): AlarmItem => {
     isRead: item.is_read,
     accent,
     iconType,
+    backUrl: item.back_url_link,
   }
 }

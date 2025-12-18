@@ -17,4 +17,5 @@ export type AlarmItem = {
   isRead: boolean
   accent: AccentKey
   iconType: IconName
+  backUrl?: string
 }

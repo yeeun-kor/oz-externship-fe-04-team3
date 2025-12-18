@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 
 import { axiosInstance } from '@/api/axios'
@@ -7,58 +6,67 @@ import {
   type NotificationListResponse,
 } from '@/mappers/notification/mapper'
 import type { AlarmItem } from '@/types/alarm'
+import { useCursorInfiniteQuery } from './useCursorInfiniteQuery'
 
 type FilterKey = 'all' | 'unread' | 'read'
 
-// 알림 목록을 가져와서 AlarmItem 배열로 변환 + 카운트 메타 반환
-const fetchNotifications = async (filter: FilterKey) => {
-  const isReadParam = filter === 'all' ? undefined : filter === 'read'
-
-  try {
-    const { data } = await axiosInstance.get<NotificationListResponse>(
-      '/v1/notifications',
-      {
-        params: {
-          page_size: 10,
-          ...(typeof isReadParam === 'boolean' ? { is_read: isReadParam } : {}),
-        },
+// 커서 기반 알림 조회 훅
+export const useNotifications = (filter: FilterKey) => {
+  const query = useCursorInfiniteQuery<AlarmItem>({
+    queryKey: ['notifications', filter],
+    queryFn: async (cursorUrl) => {
+      try {
+        const isReadParam = filter === 'all' ? undefined : filter === 'read'
+        const { data } = cursorUrl
+          ? await axiosInstance.get<NotificationListResponse>(cursorUrl)
+          : await axiosInstance.get<NotificationListResponse>(
+              '/v1/notifications',
+              {
+                params: {
+                  page_size: 10,
+                  ...(typeof isReadParam === 'boolean'
+                    ? { is_read: isReadParam }
+                    : {}),
+                },
+              }
+            )
+        return {
+          next: data.next,
+          previous: data.previous,
+          results: data.results.map(alarmMapper),
+        }
+      } catch (err) {
+        if (isAxiosError(err)) {
+          const detail = (
+            err.response?.data as { error_detail?: string } | undefined
+          )?.error_detail
+          throw new Error(detail || '알림을 불러오지 못했습니다.')
+        }
+        throw err
       }
-    )
-    return {
-      alarms: data.results.map(alarmMapper),
-      totalCount: data.total_count,
-      unreadCount: data.unread_count,
-    }
-  } catch (err) {
-    if (isAxiosError(err)) {
-      const detail = (
-        err.response?.data as { error_detail?: string } | undefined
-      )?.error_detail
-      throw new Error(detail || '알림을 불러오지 못했습니다.')
-    }
-    throw err
+    },
+  })
+
+  const alarms = query.data?.pages.flatMap((p) => p.results ?? []) ?? []
+  const errorMessage = query.error ? query.error.message : null
+  const unreadCount = alarms.filter((a) => !a.isRead).length
+  const totalCount = alarms.length
+
+  return {
+    alarms,
+    errorMessage,
+    totalCount,
+    unreadCount,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    isLoading: query.isLoading,
+    refetch: query.refetch,
   }
 }
 
-export const useNotifications = (filter: FilterKey) =>
-  useQuery<
-    { alarms: AlarmItem[]; totalCount: number; unreadCount: number },
-    Error
-  >({
-    queryKey: ['notifications', filter],
-    queryFn: () => fetchNotifications(filter),
-    // 초기 로딩 중에도 안전하게 사용
-    initialData: { alarms: [] as AlarmItem[], totalCount: 0, unreadCount: 0 },
-    staleTime: 0, // 실시간성을 위해 캐싱하지 않고 매번 신선하게 취급
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  })
-
 export const useNotificationActions = () => {
-  // 전체 읽기 요청
   const markAllRead = () => axiosInstance.post('/v1/notifications/read-all')
-  // 개별 읽기 요청
   const markRead = (id: string | number) =>
     axiosInstance.post(`/v1/notifications/${id}/read`)
 
