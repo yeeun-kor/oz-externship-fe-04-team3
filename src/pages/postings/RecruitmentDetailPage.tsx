@@ -9,6 +9,9 @@ import DetailHeader from '@/components/postings/detail/DetailHeader'
 import DetailInfo from '@/components/postings/detail/DetailInfo'
 import DetailContent from '@/components/postings/detail/DetailContent'
 import DetailActions from '@/components/postings/detail/DetailActions'
+import Modal from '@/components/common/Modal'
+import ApplicationForm from '@/components/postings/recruitment/ApplicationForm'
+import { showToast } from '@/components/common/toast/Toast'
 
 export default function RecruitmentDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,14 +20,15 @@ export default function RecruitmentDetailPage() {
   const [recruitment, setRecruitment] = useState<Recruitment | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
 
   const currentUserId = 1
   const isAuthor = recruitment?.authorId === currentUserId
 
   useEffect(() => {
-    const fetchDetail = async () => {
-      if (!id) return
+    if (!id) return
 
+    const fetchDetail = async () => {
       setIsLoading(true)
       setError(null)
 
@@ -42,62 +46,58 @@ export default function RecruitmentDetailPage() {
     fetchDetail()
   }, [id])
 
-  const handleBack = () => {
-    navigate(-1)
-  }
-
-  const handleEdit = () => {
-    navigate(`/recruitments/edit/${id}`)
-  }
-
-  const handleApply = () => {}
-
   if (id && isNaN(Number(id))) {
     return <Navigate to="/recruitments" replace />
   }
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg text-gray-600">로딩 중</div>
-      </div>
-    )
+    return <div className="p-10 text-center">로딩 중</div>
   }
 
   if (error || !recruitment) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="mb-4 text-gray-500">
-            {error || '공고를 찾을 수 없습니다.'}
-          </p>
-          <button
-            onClick={handleBack}
-            className="rounded-lg bg-yellow-400 px-6 py-2 text-white hover:bg-yellow-500"
-          >
-            돌아가기
-          </button>
-        </div>
-      </div>
-    )
+    return <div className="p-10 text-center">{error}</div>
+  }
+
+  const handleApplySuccess = () => {
+    setIsApplicationModalOpen(false)
+    showToast.success('지원 완료', '지원서가 성공적으로 제출되었습니다!')
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-4xl p-4 md:p-6">
+      <div className="mx-auto max-w-4xl p-4">
         <DetailHeader
           recruitment={recruitment}
-          onBack={handleBack}
-          onEdit={isAuthor ? handleEdit : undefined}
+          onBack={() => navigate(-1)}
+          onEdit={
+            isAuthor ? () => navigate(`/recruitments/edit/${id}`) : undefined
+          }
+          onApply={
+            !isAuthor ? () => setIsApplicationModalOpen(true) : undefined
+          }
         />
+
         <DetailInfo recruitment={recruitment} />
         <DetailContent recruitment={recruitment} />
         <DetailActions
-          onApply={handleApply}
+          onApply={() => setIsApplicationModalOpen(true)}
           onBookmark={() => {}}
           onShare={() => {}}
         />
       </div>
+
+      <Modal
+        open={isApplicationModalOpen}
+        onOpenChange={setIsApplicationModalOpen}
+        title="스터디 지원서 작성"
+        content={
+          <ApplicationForm
+            recruitmentId={Number(id)}
+            onSuccess={handleApplySuccess}
+            onCancel={() => setIsApplicationModalOpen(false)}
+          />
+        }
+      />
     </div>
   )
 }

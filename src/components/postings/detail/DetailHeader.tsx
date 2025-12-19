@@ -16,9 +16,15 @@ interface Props {
   recruitment: Recruitment
   onBack: () => void
   onEdit?: () => void
+  onApply?: () => void
 }
 
-export default function DetailHeader({ recruitment, onBack, onEdit }: Props) {
+export default function DetailHeader({
+  recruitment,
+  onBack,
+  onEdit,
+  onApply,
+}: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false)
 
   const formatDate = (dateStr?: string) => {
@@ -54,7 +60,7 @@ export default function DetailHeader({ recruitment, onBack, onEdit }: Props) {
     <div className="mb-6">
       <button
         onClick={onBack}
-        className="mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200"
+        className="mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
       >
         <ArrowLeft className="h-6 w-6 text-gray-500" />
       </button>
@@ -88,6 +94,12 @@ export default function DetailHeader({ recruitment, onBack, onEdit }: Props) {
             >
               <Edit className="h-4 w-4" />
               편집하기
+            </Button>
+          )}
+
+          {onApply && (
+            <Button variant="primary" onClick={onApply}>
+              지원하기
             </Button>
           )}
         </div>

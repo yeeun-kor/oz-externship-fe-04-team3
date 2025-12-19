@@ -36,6 +36,7 @@ function AppRoutes() {
           path="/recruitments"
           element={<RecruitmentListPage isLoggedIn={false} userName="사용자" />}
         />
+
         <Route
           path="/recruitments/test"
           element={
