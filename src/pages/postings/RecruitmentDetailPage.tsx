@@ -12,6 +12,7 @@ import DetailActions from '@/components/postings/detail/DetailActions'
 import Modal from '@/components/common/Modal'
 import ApplicationForm from '@/components/postings/recruitment/ApplicationForm'
 import { showToast } from '@/components/common/toast/Toast'
+import { useAuthStore } from '@/store/userStore'
 
 export default function RecruitmentDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -22,8 +23,9 @@ export default function RecruitmentDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
 
-  const currentUserId = 1
-  const isAuthor = recruitment?.authorId === currentUserId
+  const { user, loginState } = useAuthStore()
+  const isLoggedIn = loginState === 'USER'
+  const isAuthor = isLoggedIn && recruitment?.authorId === user?.id
 
   useEffect(() => {
     if (!id) return
@@ -66,21 +68,16 @@ export default function RecruitmentDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl p-4">
-        <DetailHeader
-          recruitment={recruitment}
-          onBack={() => navigate(-1)}
-          onEdit={
-            isAuthor ? () => navigate(`/recruitments/edit/${id}`) : undefined
-          }
-          onApply={
-            !isAuthor ? () => setIsApplicationModalOpen(true) : undefined
-          }
-        />
+        <DetailHeader recruitment={recruitment} onBack={() => navigate(-1)} />
 
         <DetailInfo recruitment={recruitment} />
         <DetailContent recruitment={recruitment} />
+
         <DetailActions
-          onApply={() => setIsApplicationModalOpen(true)}
+          isAuthor={isAuthor}
+          onApply={
+            !isAuthor ? () => setIsApplicationModalOpen(true) : undefined
+          }
           onBookmark={() => {}}
           onShare={() => {}}
         />

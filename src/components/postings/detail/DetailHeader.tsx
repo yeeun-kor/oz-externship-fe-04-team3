@@ -1,13 +1,5 @@
 import type { Recruitment } from '@/mocks/recruitmentData'
-import {
-  ArrowLeft,
-  Share2,
-  Bookmark,
-  Edit,
-  User,
-  Calendar,
-  Eye,
-} from 'lucide-react'
+import { ArrowLeft, Share2, Bookmark, User, Calendar, Eye } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { showToast } from '@/components/common/toast/Toast'
 import { useState } from 'react'
@@ -15,16 +7,9 @@ import { useState } from 'react'
 interface Props {
   recruitment: Recruitment
   onBack: () => void
-  onEdit?: () => void
-  onApply?: () => void
 }
 
-export default function DetailHeader({
-  recruitment,
-  onBack,
-  onEdit,
-  onApply,
-}: Props) {
+export default function DetailHeader({ recruitment, onBack }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false)
 
   const formatDate = (dateStr?: string) => {
@@ -85,23 +70,6 @@ export default function DetailHeader({
               className={isBookmarked ? 'fill-yellow-400 text-yellow-400' : ''}
             />
           </Button>
-
-          {onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="primary"
-              className="bg-yellow-400 hover:bg-yellow-500"
-            >
-              <Edit className="h-4 w-4" />
-              편집하기
-            </Button>
-          )}
-
-          {onApply && (
-            <Button variant="primary" onClick={onApply}>
-              지원하기
-            </Button>
-          )}
         </div>
       </div>
 
