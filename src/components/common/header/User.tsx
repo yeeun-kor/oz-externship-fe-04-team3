@@ -5,6 +5,7 @@ import useIsDesktop from '@/hooks/useIsDesktop'
 import { AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 
+import { ROUTE_PATHS } from '@/constant/route'
 import { useAuthStore } from '@/store/userStore'
 import NotificationModal from '../notification/NotificationModal'
 import UserModal from './UserModal'
@@ -35,18 +36,18 @@ function User() {
           <a href="/courses" className="hover:text-primary-600 cursor-pointer">
             강의 목록
           </a>
-          {/* 클릭하면 강의목록 페이지 렌더링 */}
           <a
-            href="/recruitments"
+            href={ROUTE_PATHS.STUDY}
             className="hover:text-primary-600 cursor-pointer"
           >
             스터디 그룹
           </a>
-          {/* 클릭하면 스터디그룹 페이지로 렌더링 */}
-          <a href="/manage" className="hover:text-primary-600 cursor-pointer">
+          <a
+            href="/recruitments"
+            className="hover:text-primary-600 cursor-pointer"
+          >
             구인 공고
           </a>
-          {/* 클릭하면 구인공고 페이지 렌더링 */}
         </div>
         <div className="relative">
           <img

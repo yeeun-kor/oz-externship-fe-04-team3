@@ -1,5 +1,6 @@
 import logoutIcon from '@/assets/icons/logout.svg'
 import modalProfileIcon from '@/assets/icons/modalProfileIcon.svg'
+import { ROUTE_PATHS } from '@/constant/route'
 function UserModal() {
   return (
     <div className="md:bg-basic-white hidden md:absolute md:top-[45.05px] md:right-2.5 md:flex md:h-[99px] md:w-48 md:flex-col md:gap-2 md:rounded-lg md:border md:border-solid md:border-[#E5E7EB] md:drop-shadow-[0_10px_15px_rgba(0,0,0,0.2)]">
@@ -14,7 +15,7 @@ function UserModal() {
           alt="modalProfileIcon"
           className="h-[18px] w-[18px]"
         />
-        <span>마이페이지</span>
+        <a href={ROUTE_PATHS.MYPAGE}>마이페이지</a>
         {/* 클릭하면 마이페이지로 이동 */}
       </div>
     </div>

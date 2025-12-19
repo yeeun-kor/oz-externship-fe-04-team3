@@ -11,7 +11,7 @@ export default function LectureList({ data }: dataProps) {
     <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {data?.pages.map((page, pageIndex) => (
         <React.Fragment key={pageIndex}>
-          {page.results.map((lecture) => (
+          {page?.results?.map((lecture) => (
             <LectureCard key={lecture.id} {...lecture} />
           ))}
         </React.Fragment>

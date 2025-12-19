@@ -1,10 +1,10 @@
 import Layout from '@/components/common/layout/Layout'
-import CoursesPage from '@/pages/CoursesPage'
-import Main from '@/pages/main'
-import ManagePage from '@/pages/postings/Manage'
-import RecruitmentListPage from '@/pages/postings/RecruitmentListPage'
-import RecruitmentDetailPage from '@/pages/postings/RecruitmentDetailPage'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
+import NotFound from '@/components/notFound/NotFound'
+import CoursesPage from '@/pages/CoursesPage'
+import ManagePage from '@/pages/postings/Manage'
+import RecruitmentDetailPage from '@/pages/postings/RecruitmentDetailPage'
+import RecruitmentListPage from '@/pages/postings/RecruitmentListPage'
 import WritePage from '@/pages/postings/Write'
 import YeeunTest from '@/pages/YeeunTest'
 import { useAuthStore } from '@/store/userStore'
@@ -31,7 +31,6 @@ function AppRoutes() {
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/manage" element={<ManagePage />} />
         <Route path="/write" element={<WritePage />} />
-        <Route path="/main" element={<Main />} />
         <Route
           path="/recruitments"
           element={<RecruitmentListPage isLoggedIn={false} userName="사용자" />}
@@ -55,6 +54,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />}></Route>
       </Route>
     </Routes>
   )

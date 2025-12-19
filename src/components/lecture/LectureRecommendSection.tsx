@@ -25,7 +25,7 @@ export default function LectureRecommendSection(
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {lectureList.slice(0, 3).map((i) => (
+          {lectureList?.slice(0, 3).map((i) => (
             <LectureCard key={i.id} {...i}></LectureCard>
           ))}
         </div>

@@ -6,6 +6,7 @@ import profileImage from '@/assets/icons/profileImg.svg'
 import study from '@/assets/icons/study.svg'
 import defaultProfileImg from '@/assets/images/defaultProfileImg.svg'
 import logo from '@/assets/images/logo.svg'
+import { ROUTE_PATHS } from '@/constant/route'
 import { useAuthStore } from '@/store/userStore'
 interface MobileModalProps {
   setIsModalOpen: (value: boolean) => void
@@ -32,17 +33,14 @@ function MobileModal({ setIsModalOpen }: MobileModalProps) {
         <div className="flex h-12 items-center gap-3">
           <img src={classIcon} alt="classIcon" />
           <a href="/courses">강의 목록</a>
-          {/* 강의목록 페이지로 렌더링 */}
         </div>
         <div className="flex h-12 items-center gap-3">
           <img src={study} alt="studyIcon" />
-          <a href="">스터디 그룹</a>
-          {/* 로그인 화면으로 렌더링 */}
+          <a href={ROUTE_PATHS.STUDY}>스터디 그룹</a>
         </div>
         <div className="flex h-12 items-center gap-3">
           <img src={announcement} alt="announcementIcon" />
           <a href="/recruitments">구인 광고</a>
-          {/* 구인광고 페이지로 렌더링 */}
         </div>
       </div>
       {/* user 일때만 나타나게 */}
@@ -67,9 +65,12 @@ function MobileModal({ setIsModalOpen }: MobileModalProps) {
           </div>
           <button className="flex cursor-pointer items-center justify-center gap-[13px] rounded-lg bg-[#FEF9C3] px-4 py-2">
             <img src={profileImage} alt="profileImg" />
-            <span className="text- text-primary-600 text-base font-medium">
+            <a
+              href={ROUTE_PATHS.MYPAGE}
+              className="text-primary-600 text-base font-medium"
+            >
               마이페이지
-            </span>
+            </a>
           </button>
           <button className="flex cursor-pointer items-center justify-center gap-[13px] rounded-lg bg-gray-100 px-4 py-2">
             <img src={logoutIcon} alt="logoutIcon" />
