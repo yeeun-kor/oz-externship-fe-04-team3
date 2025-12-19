@@ -1,0 +1,30 @@
+name: Sync to yeeun repo
+
+on:
+  push:
+    branches: ["develop"] # 조직 레포 devleop 에 push될 때 트리거
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install mustache (to update the date)
+        run: sudo apt-get update && sudo apt-get install -y ruby && sudo gem install mustache
+
+      - name: Create output directory with full repo content
+        run: bash ./build.sh
+
+      - name: Pushes to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.AUTO_ACTIONS }}
+        with:
+          source-directory: "output"
+          destination-github-username: "yeeun-kor"
+          destination-repository-name: "oz-externship-fe-04-team3"  # 목적지 레포 이름
+          user-email: ${{ secrets.EMAIL }}
+          commit-message: ${{ github.event.commits[0].message }}
+          target-branch: develop
