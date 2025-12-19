@@ -199,7 +199,7 @@ function DialogContent({
           data-slot="dialog-content"
           className={cn(
             'bg-background fixed top-[50%] left-[50%] z-50',
-            'flex max-h-[80dvh] w-full max-w-sm sm:max-w-lg',
+            'flex max-h-[80dvh] w-sm sm:max-w-lg',
             'translate-x-[-50%] translate-y-[-50%]',
             'flex-col overflow-hidden rounded-lg border shadow-lg',
             className

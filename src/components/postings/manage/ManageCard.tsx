@@ -6,9 +6,9 @@ import { Badge } from '@/components/common/badge'
 import { Skeleton } from '@/components/common/skeleton'
 import { getTypeIcon } from '@/helpers/icons'
 import type { ManageRecruitment } from '@/types/myRecruitment'
-import ManageApplicantsModal from './ManageApplicantsModal'
 import ApplicantDetailModal from './ApplicantDetailModal'
 import type { Applicant, ApplicantDetail } from './applicantTypes'
+import ManageApplicantsModal from './ManageApplicantsModal'
 
 type ManageCardProps = {
   posting: ManageRecruitment
@@ -100,7 +100,6 @@ export default function ManageCard({ posting }: ManageCardProps) {
         <img
           src={posting.thumbnailImgUrl}
           alt={posting.title}
-          loading="lazy"
           onLoad={() => setImgLoaded(true)}
           onError={() => setImgLoaded(true)}
           className={`mx-auto h-32 w-full rounded-md object-cover transition-opacity duration-200 md:h-24 md:w-40 ${

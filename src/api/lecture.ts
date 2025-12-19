@@ -25,12 +25,12 @@ export async function getLecturesApi(
 }
 /* 북마크 */
 export async function getBookmark(): Promise<BookmarkResponse> {
-  const { data } = await axiosInstance.get(`v1/lecture-bookmarks`)
+  const { data } = await axiosInstance.get(`/v1/lecture-bookmarks`)
   return data
 }
 
 export async function addBookmark(lectureId: number): Promise<string> {
-  const { data } = await axiosInstance.post('v1/lecture-bookmarks', {
+  const { data } = await axiosInstance.post('/v1/lecture-bookmarks', {
     lecture_id: lectureId,
   })
   return data.detail
@@ -38,7 +38,7 @@ export async function addBookmark(lectureId: number): Promise<string> {
 
 export async function deleteBookmark(lectureId: number): Promise<string> {
   const { data } = await axiosInstance.delete(
-    `v1/lecture-bookmarks/${lectureId}`
+    `/v1/lecture-bookmarks/${lectureId}`
   )
   return data.detail
 }

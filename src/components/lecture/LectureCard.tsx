@@ -46,8 +46,9 @@ export default function LectureCard(lecture: Lecture) {
     reviews,
   } = lecture
 
-  /* 리뷰보기 모달창 상태 */
+  /* 리뷰보기 모달창 및 이미지 로드  상태 */
   const [showReviewModal, setReviewShowModal] = useState(false)
+  const [imgLoaded, setImgLoaded] = useState(false)
   /* 로그인 분기 처리 */
   const { loginState } = useAuthStore()
   /* 북마크 커스텀 상태 */
@@ -77,10 +78,10 @@ export default function LectureCard(lecture: Lecture) {
     }
   }, [isDesktop])
   return (
-    <Card className="w-full">
+    <Card>
       <CardHeader>
-        <CardAction className="absolute z-2 justify-between px-3 py-3">
-          <div className="top-2 flex flex-col gap-2">
+        <CardAction className="absolute justify-between px-3 py-3">
+          <div className="absolute top-2 flex flex-col gap-2">
             <Badge variant={'platform'}>{platform}</Badge>
             <Badge variant={'discount'}>
               {getDiscount(discounted_price, original_price)}% 할인
@@ -89,7 +90,7 @@ export default function LectureCard(lecture: Lecture) {
           <Button
             variant="outline"
             size={'icon'}
-            className="rounded-full border-none"
+            className="absolute right-2 rounded-full border-none"
             aria-label="강의 북마크하기"
             onClick={handleBookmarkClick}
           >
@@ -100,16 +101,15 @@ export default function LectureCard(lecture: Lecture) {
             />
           </Button>
         </CardAction>
-        {thumbnail_img_url ? (
-          <img
-            src={thumbnail_img_url}
-            alt={title}
-            className="h-auto w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <Skeleton></Skeleton>
-        )}
+        {/* IMG 로딩중이면 스켈레톤  */}
+        {!imgLoaded && <Skeleton className="h-[210px] w-full" />}
+        <img
+          src={thumbnail_img_url}
+          alt={title}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgLoaded(true)}
+          className="aspect-auto max-h-[210px] w-full object-cover"
+        />
       </CardHeader>
       <CardContent>
         <div className="Card-Content-badge flex gap-1">
@@ -153,7 +153,7 @@ export default function LectureCard(lecture: Lecture) {
         )}
         {/* 모바일 버전 */}
         {!isDesktop && (
-          <Accordion type="single" collapsible>
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
               <AccordionTrigger
                 className="text-primary-500"
@@ -163,7 +163,7 @@ export default function LectureCard(lecture: Lecture) {
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2">
                 {reviews.length === 0 ? (
-                  <Item className="w-full">
+                  <Item>
                     <ItemContent>
                       <ItemTitle>{getRatingStarsIcon(0)}</ItemTitle>
                       <ItemDescription>리뷰가 없습니다</ItemDescription>
@@ -171,7 +171,7 @@ export default function LectureCard(lecture: Lecture) {
                   </Item>
                 ) : (
                   reviews.map((i) => (
-                    <Item key={i.id} className="w-full">
+                    <Item key={i.id}>
                       <ItemContent>
                         <ItemTitle>{getRatingStarsIcon(i.rating)}</ItemTitle>
                         <ItemDescription>{i.content}</ItemDescription>
@@ -184,7 +184,7 @@ export default function LectureCard(lecture: Lecture) {
           </Accordion>
         )}
         <Button
-          className="absolute top-6 right-2"
+          className="absolute top-6 right-2 shrink-0"
           aria-label={`${title} 강의 페이지로 이동`}
           onClick={() => {
             window.open(url_link, '_blank')
