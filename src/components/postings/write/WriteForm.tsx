@@ -8,7 +8,11 @@ import TagSvg from '@/assets/icons/Tag.svg'
 import { FileUploader } from '@/components/common/uploader/FileUploader'
 import { useWriteRecruitmentForm } from '@/hooks/useWriteRecruitmentForm'
 import { TagSelectModal, type TagOption } from './TagSelectModal'
-import { useState } from 'react'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { getRecruitmentDetail } from '@/api/recruitments'
+import { getLecturesApi } from '@/api/lecture'
 
 type WriteFormHook = ReturnType<typeof useWriteRecruitmentForm>
 
@@ -18,7 +22,27 @@ type SectionProps = {
   options: WriteFormHook['options']
 }
 
-function BasicInfoSection({ state, actions, options }: SectionProps) {
+type BasicInfoProps = SectionProps & {
+  lectures: { id: number; title: string; price: number }[]
+  lecturesLoading: boolean
+  totalLecturePrice: number
+}
+
+type ExtraInfoProps = {
+  state: WriteFormHook['state']
+  actions: WriteFormHook['actions']
+  selectedTags: TagOption[]
+  setSelectedTags: Dispatch<SetStateAction<TagOption[]>>
+}
+
+function BasicInfoSection({
+  state,
+  actions,
+  options,
+  lectures,
+  lecturesLoading,
+  totalLecturePrice,
+}: BasicInfoProps) {
   const { title, studyGroupId, expectedHeadcount, deadline } = state
   const {
     setTitle,
@@ -55,7 +79,40 @@ function BasicInfoSection({ state, actions, options }: SectionProps) {
             setExpectedHeadcount('')
           }}
         />
+        {lectures.length > 0 && (
+          <div className="mt-3 space-y-2 rounded-lg bg-[#FEFCE8] p-3">
+            <p className="text-sm font-medium text-[#854D0E]">
+              선택된 그룹의 강의 정보
+            </p>
+            <div className="space-y-1 text-sm text-[#A16207]">
+              {lectures.map((lec) => (
+                <div key={lec.id} className="flex-between">
+                  <span>{lec.title}</span>
+                  <span>
+                    {lec.price > 0
+                      ? `${lec.price.toLocaleString()}원`
+                      : '가격 정보 없음'}
+                  </span>
+                </div>
+              ))}
+              {lecturesLoading && (
+                <div className="text-xs text-orange-600">
+                  강의 가격 불러오는 중...
+                </div>
+              )}
+              <div className="flex-between mt-2 border-t border-orange-200 pt-2 text-sm font-medium">
+                <span>총 강의 비용</span>
+                <span>
+                  {totalLecturePrice > 0
+                    ? `${totalLecturePrice.toLocaleString()}원`
+                    : '정보 없음'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
       <div className="flex-between flex-col gap-4 md:flex-row">
         <div className="w-full">
           <DatePickerInput
@@ -121,11 +178,20 @@ function ContentSection({
 function ExtraInfoSection({
   state,
   actions,
-}: Pick<SectionProps, 'state' | 'actions'>) {
-  const [isTagModalOpen, setIsTagModalOpen] = useState(false)
-  const [selectedTags, setSelectedTags] = useState<TagOption[]>([])
+  selectedTags,
+  setSelectedTags,
+  isTagModalOpen,
+  onOpenTagModal,
+}: ExtraInfoProps & {
+  isTagModalOpen: boolean
+  onOpenTagModal: (open: boolean) => void
+}) {
   const { estimatedFee, uploadedFiles } = state
-  const { setEstimatedFee, setUploadedFiles, onUploadFile } = actions
+  const { setEstimatedFee, setUploadedFiles, onUploadFile, setTagIds } = actions
+
+  useEffect(() => {
+    setTagIds(selectedTags.map((tag) => Number(tag.id)))
+  }, [selectedTags, setTagIds])
 
   return (
     <section className="flex flex-col gap-6 rounded-xl border border-gray-200 bg-white p-8">
@@ -146,7 +212,7 @@ function ExtraInfoSection({
           <Button
             variant={'primary'}
             type="button"
-            onClick={() => setIsTagModalOpen(true)}
+            onClick={() => onOpenTagModal(true)}
           >
             <Plus className="h-6 w-6" />
             태그 추가
@@ -219,7 +285,7 @@ function ExtraInfoSection({
       </div>
       <TagSelectModal
         open={isTagModalOpen}
-        onOpenChange={setIsTagModalOpen}
+        onOpenChange={onOpenTagModal}
         initialSelected={selectedTags}
         onConfirm={(tags) => setSelectedTags(tags)}
       />
@@ -229,12 +295,114 @@ function ExtraInfoSection({
 
 export default function WriteForm() {
   const { state, actions, options } = useWriteRecruitmentForm()
+  const [selectedTags, setSelectedTags] = useState<TagOption[]>([])
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false)
+  const [initialized, setInitialized] = useState(false)
+  const [searchParams] = useSearchParams()
+  const recruitmentId = searchParams.get('recruitmentId')
+  const {
+    setTitle,
+    setContent,
+    setEstimatedFee,
+    setExpectedHeadcount,
+    setTagIds,
+    handleDeadlineChange,
+  } = actions
+  const lecturesFromGroup = options.groupDetail?.lectures ?? []
+
+  const { data: lectureDetails = [], isLoading: lecturesLoading } = useQuery({
+    queryKey: ['group-lecture-details', lecturesFromGroup.map((l) => l.id)],
+    queryFn: async () => {
+      const results = await Promise.all(
+        lecturesFromGroup.map(async (lec) => {
+          const searchResult = await getLecturesApi({
+            search: lec.title,
+            page_size: 1,
+          })
+          return searchResult.results[0]
+        })
+      )
+      return results.filter(Boolean)
+    },
+    enabled: lecturesFromGroup.length > 0,
+  })
+
+  const { data: detail } = useQuery<
+    | {
+        title: string
+        content: string
+        estimated_fee?: number
+        expected_headcount: number
+        close_at: string
+        tags: { id: number; name: string }[]
+        image_urls?: string[]
+      }
+    | undefined
+  >({
+    queryKey: ['my-recruitment-detail', recruitmentId],
+    queryFn: async () => {
+      if (!recruitmentId) return undefined
+      return getRecruitmentDetail(recruitmentId)
+    },
+    enabled: !!recruitmentId,
+  })
+
+  const formattedLectures = lectureDetails.map((lec) => ({
+    id: lec.id,
+    title: lec.title,
+    price: lec.discounted_price ?? lec.original_price ?? 0,
+  }))
+  const totalLecturePrice = formattedLectures.reduce(
+    (sum, lec) => sum + (lec.price || 0),
+    0
+  )
+
+  useEffect(() => {
+    if (!detail || initialized) return
+    setTitle(detail.title)
+    setContent(detail.content)
+    setEstimatedFee(detail.estimated_fee ? String(detail.estimated_fee) : '')
+    setExpectedHeadcount(
+      detail.expected_headcount ? String(detail.expected_headcount) : ''
+    )
+    setTagIds(detail.tags?.map((t) => t.id) ?? [])
+    setSelectedTags(
+      detail.tags?.map((t) => ({ id: String(t.id), name: t.name })) ?? []
+    )
+    if (detail.close_at) {
+      handleDeadlineChange(new Date(detail.close_at))
+    }
+    setInitialized(true)
+  }, [
+    detail,
+    initialized,
+    setTitle,
+    setContent,
+    setEstimatedFee,
+    setExpectedHeadcount,
+    setTagIds,
+    handleDeadlineChange,
+  ])
 
   return (
     <form className="flex flex-col gap-8" onSubmit={actions.handleSubmit}>
-      <BasicInfoSection state={state} actions={actions} options={options} />
+      <BasicInfoSection
+        state={state}
+        actions={actions}
+        options={options}
+        lectures={formattedLectures}
+        lecturesLoading={lecturesLoading}
+        totalLecturePrice={totalLecturePrice}
+      />
       <ContentSection state={state} actions={actions} />
-      <ExtraInfoSection state={state} actions={actions} />
+      <ExtraInfoSection
+        state={state}
+        actions={actions}
+        selectedTags={selectedTags}
+        setSelectedTags={setSelectedTags}
+        isTagModalOpen={isTagModalOpen}
+        onOpenTagModal={setIsTagModalOpen}
+      />
       <section className="my-8 flex justify-end gap-4 border-t border-gray-200 pt-[25px]">
         <Button variant="outline" type="button" className="px-6 py-3">
           취소

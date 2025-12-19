@@ -38,3 +38,9 @@ export type MyRecruitmentParams = {
   tags?: string[]
   is_closed?: boolean
 }
+
+export type MyRecruitmentDetail = ManageRecruitment & {
+  content: string
+  estimated_fee?: number
+  image_urls?: string[]
+}

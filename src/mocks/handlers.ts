@@ -24,14 +24,14 @@ export const handlers = [
   ...notificationHandlers,
   // 강의목록 핸들러
   ...lectureHandlers,
+  // 내 공고 목록 핸들러
+  ...myRecruitmentHandlers,
   // 공고 목록 핸들러
   ...recruitmentHandlers,
   // 공고 생성 핸들러
   ...recruitmentCreateHandler,
   // 스터디 그룹 조회 핸들러
   ...studyGroupHandlers,
-  // 내 공고 목록 핸들러
-  ...myRecruitmentHandlers,
   //북마크 핸들러
   ...bookmarkHandlers,
   // 업로드 presigned URL 핸들러

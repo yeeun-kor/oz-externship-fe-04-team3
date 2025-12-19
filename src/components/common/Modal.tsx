@@ -63,67 +63,58 @@ export default function Modal({
   return (
     <div>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <form>
-          {trigger && (
-            <DialogTrigger asChild>
-              <Button variant={trigger.variant} className={trigger.className}>
-                {trigger.icon}
-                {trigger.text}
-              </Button>
-            </DialogTrigger>
+        {trigger && (
+          <DialogTrigger asChild>
+            <Button variant={trigger.variant} className={trigger.className}>
+              {trigger.icon}
+              {trigger.text}
+            </Button>
+          </DialogTrigger>
+        )}
+        <DialogContent
+          className={cn('w-auto min-w-[400px] sm:max-w-2xl', contentClassName)}
+        >
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+          <Separator
+            style={{
+              marginLeft: '-24px',
+              marginRight: '-24px',
+              width: 'calc(100% + 48px)',
+              maxWidth: 'none',
+            }}
+          />
+          <div className={cn('overflow-y-auto p-4', bodyClassName)}>
+            {content}
+          </div>
+          {footer && (
+            <>
+              <Separator
+                style={{
+                  marginLeft: '-24px',
+                  marginRight: '-24px',
+                  width: 'calc(100% + 48px)',
+                  maxWidth: 'none',
+                }}
+              />
+              <DialogFooter>
+                <DialogDescription>{footer.description}</DialogDescription>
+                <div className="flex gap-2">
+                  <DialogClose asChild>
+                    {footer.closeButton?.text && (
+                      <Button variant={'outline'}>
+                        {footer.closeButton?.text}
+                      </Button>
+                    )}
+                  </DialogClose>
+                  {footer.footerButtons}
+                </div>
+              </DialogFooter>
+            </>
           )}
-          <DialogContent
-            className={cn(
-              'w-auto min-w-[400px] sm:max-w-2xl',
-              contentClassName
-            )}
-          >
-            <DialogHeader>
-              <DialogTitle>{title}</DialogTitle>
-              <DialogDescription>{description}</DialogDescription>
-            </DialogHeader>
-            <Separator
-              style={{
-                marginLeft: '-24px',
-                marginRight: '-24px',
-                width: 'calc(100% + 48px)',
-                maxWidth: 'none',
-              }}
-            />
-            {/*
-               * @features
-               - 컨텐츠 내용만 wrapper 하여 스크롤바 구현
-               */}
-            <div className={cn('overflow-y-auto p-4', bodyClassName)}>
-              {content}
-            </div>
-            {footer && (
-              <>
-                <Separator
-                  style={{
-                    marginLeft: '-24px',
-                    marginRight: '-24px',
-                    width: 'calc(100% + 48px)',
-                    maxWidth: 'none',
-                  }}
-                />
-                <DialogFooter>
-                  <DialogDescription>{footer.description}</DialogDescription>
-                  <div className="flex gap-2">
-                    <DialogClose asChild>
-                      {footer.closeButton?.text && (
-                        <Button variant={'outline'}>
-                          {footer.closeButton?.text}
-                        </Button>
-                      )}
-                    </DialogClose>
-                    {footer.footerButtons}
-                  </div>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </form>
+        </DialogContent>
       </Dialog>
     </div>
   )

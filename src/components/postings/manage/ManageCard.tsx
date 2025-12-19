@@ -1,25 +1,84 @@
 import { Bookmark, Calendar, Eye, Pencil, Trash2, Users } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 
-import { Button } from '@/components/common'
+import { Button, Modal } from '@/components/common'
 import { Badge } from '@/components/common/badge'
 import { Skeleton } from '@/components/common/skeleton'
 import { getTypeIcon } from '@/helpers/icons'
 import type { ManageRecruitment } from '@/types/myRecruitment'
 import ApplicantDetailModal from './ApplicantDetailModal'
 import type { Applicant, ApplicantDetail } from './applicantTypes'
+import { deleteMyRecruitment } from '@/api/myRecruitment'
+import { showToast } from '@/components/common/toast/Toast'
 import ManageApplicantsModal from './ManageApplicantsModal'
 
 type ManageCardProps = {
   posting: ManageRecruitment
+  onDeleted?: () => void
 }
 
-export default function ManageCard({ posting }: ManageCardProps) {
+type DeleteModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  onConfirm: () => void
+  isDeleting: boolean
+}
+
+function ConfirmDeleteModal({
+  open,
+  onOpenChange,
+  title,
+  onConfirm,
+  isDeleting,
+}: DeleteModalProps) {
+  return (
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="공고 삭제"
+      description="삭제 후에는 되돌릴 수 없습니다."
+      content={
+        <div className="space-y-3 text-sm text-gray-700">
+          <div className="rounded-md border border-red-100 bg-red-50 px-4 py-3 text-red-700">
+            공고를 삭제하면 지원 내역도 더 이상 확인할 수 없습니다.
+          </div>
+          <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3">
+            <p className="font-semibold text-gray-900">삭제 대상</p>
+            <p className="mt-1 line-clamp-2 text-gray-700">{title}</p>
+          </div>
+          <p className="text-xs text-gray-500">
+            삭제를 원하지 않으면 취소 버튼을 눌러주세요.
+          </p>
+        </div>
+      }
+      footer={{
+        closeButton: { text: '취소' },
+        footerButtons: (
+          <Button
+            variant="danger"
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? '삭제 중...' : '삭제'}
+          </Button>
+        ),
+      }}
+    />
+  )
+}
+
+export default function ManageCard({ posting, onDeleted }: ManageCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
     null
   )
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const navigate = useNavigate()
   // TODO: api 연동 필요
   const mockApplicants: Applicant[] = [
     {
@@ -90,6 +149,20 @@ export default function ManageCard({ posting }: ManageCardProps) {
   const selectedApplicant =
     applicantDetails.find((a) => a.id === selectedApplicantId) ?? null
 
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await deleteMyRecruitment(posting.uuid)
+      showToast.success('삭제 완료', '공고가 삭제되었습니다.')
+      setIsDeleteModalOpen(false)
+      onDeleted?.()
+    } catch (err) {
+      showToast.error('삭제 실패', (err as Error)?.message ?? '')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="relative grid gap-4 rounded-lg border border-gray-200 bg-white p-4 md:grid-cols-[160px_1fr] md:items-start">
       {/* 썸네일 */}
@@ -123,10 +196,16 @@ export default function ManageCard({ posting }: ManageCardProps) {
               <Bookmark size={16} />
               <span>{posting.bookmarkCount}</span>
             </div>
-            <button className="text-gray-500 hover:text-gray-700">
+            <button
+              className="hover:text-primary-500 cursor-pointer text-gray-500"
+              onClick={() => navigate(`/write?recruitmentId=${posting.uuid}`)}
+            >
               <Pencil size={16} />
             </button>
-            <button className="text-gray-500 hover:text-gray-700">
+            <button
+              className="hover:text-danger-600 cursor-pointer text-gray-500"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
               <Trash2 size={16} />
             </button>
           </div>
@@ -191,6 +270,13 @@ export default function ManageCard({ posting }: ManageCardProps) {
           setSelectedApplicantId(open ? selectedApplicantId : null)
         }
         applicant={selectedApplicant}
+      />
+      <ConfirmDeleteModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title={posting.title}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
       />
     </div>
   )

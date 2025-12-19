@@ -22,6 +22,7 @@ export default function Manage() {
     closedCount,
     isLoading,
     error,
+    refetch,
   } = useMyRecruitments({
     page_size: 10,
     sort,
@@ -63,7 +64,7 @@ export default function Manage() {
       )}
       {!isLoading && !error && (
         <>
-          <ManageList postings={data} />
+          <ManageList postings={data} onDeleted={() => refetch()} />
           {isFetchingNextPage && <ManageCardSkeleton count={6} />}
           {!hasNextPage ? (
             <div className="flex-center mt-12 h-12 rounded-md bg-gray-400 text-center text-white">

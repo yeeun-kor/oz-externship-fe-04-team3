@@ -89,5 +89,6 @@ export const useMyRecruitments = ({
       openCountQuery.isLoading ||
       closedCountQuery.isLoading,
     error: listQuery.error || openCountQuery.error || closedCountQuery.error,
+    refetch: listQuery.refetch,
   }
 }

@@ -38,7 +38,11 @@ export const recruitmentHandlers = [
   }),
 
   http.get('/api/v1/recruitments/:id', ({ params }) => {
-    const recruitment = mockRecruitments.find((r) => r.id === Number(params.id))
+    const numId = Number(params.id)
+    if (Number.isNaN(numId)) {
+      return HttpResponse.json({ message: 'Not Found' }, { status: 404 })
+    }
+    const recruitment = mockRecruitments.find((r) => r.id === numId)
 
     if (!recruitment) {
       return HttpResponse.json({ message: 'Not Found' }, { status: 404 })

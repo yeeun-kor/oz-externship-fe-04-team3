@@ -22,7 +22,7 @@ const RecruitmentPayloadSchema = z.object({
   expected_headcount: z.number().int().positive(),
   close_at: z.string().min(1),
   estimated_fee: z.number().int().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.number().int()).optional(),
   image_urls: z.array(z.string().url()).max(5).optional(),
   files: z
     .array(
@@ -42,6 +42,7 @@ export function useWriteRecruitmentForm() {
   const [estimatedFee, setEstimatedFee] = useState('')
   const [imageCount, setImageCount] = useState(0)
   const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [tagIds, setTagIds] = useState<number[]>([])
   const [studyGroupId, setStudyGroupId] = useState<string>('')
   const [expectedHeadcount, setExpectedHeadcount] = useState<string>('')
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
@@ -70,13 +71,13 @@ export function useWriteRecruitmentForm() {
     ? Math.max(0, groupDetail.max_headcount - groupDetail.current_headcount)
     : 0
 
-  const headcountOptions =
-    remainingHeadcount > 0
-      ? Array.from({ length: remainingHeadcount }, (_, idx) => {
-          const val = idx + 1
-          return { itemValue: String(val), itemText: `${val}명` }
-        })
-      : []
+  const headcountOptions = useMemo(() => {
+    if (remainingHeadcount <= 0) return []
+    return Array.from({ length: remainingHeadcount }, (_, idx) => {
+      const val = idx + 1
+      return { itemValue: String(val), itemText: `${val}명` }
+    })
+  }, [remainingHeadcount])
 
   const handleDeadlineChange = (next: Date | undefined) => {
     if (next && groupDetail?.end_at) {
@@ -139,7 +140,7 @@ export function useWriteRecruitmentForm() {
       expected_headcount: Number(expectedHeadcount),
       close_at: formatCloseAt(deadline),
       estimated_fee: estimatedFee ? Number(estimatedFee) : undefined,
-      tags: [],
+      tags: tagIds.length ? tagIds : undefined,
       image_urls: imageUrls,
       files: uploadedFiles.map((f) => ({
         file_name: f.name,
@@ -173,6 +174,7 @@ export function useWriteRecruitmentForm() {
     studyGroupId,
     expectedHeadcount,
     uploadedFiles,
+    tagIds,
   }
 
   const actions = {
@@ -184,6 +186,7 @@ export function useWriteRecruitmentForm() {
     setStudyGroupId,
     setExpectedHeadcount,
     setUploadedFiles,
+    setTagIds,
     onUploadImage,
     onUploadFile,
     handleSubmit,
@@ -194,8 +197,9 @@ export function useWriteRecruitmentForm() {
       groupOptions,
       headcountOptions,
       remainingHeadcount,
+      groupDetail,
     }),
-    [groupOptions, headcountOptions, remainingHeadcount]
+    [groupOptions, headcountOptions, remainingHeadcount, groupDetail]
   )
 
   return { state, actions, options }

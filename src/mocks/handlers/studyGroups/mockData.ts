@@ -9,7 +9,14 @@ export const mockStudyGroupList = [
     current_headcount: 5,
     profile_img_url: 'https://picsum.photos/seed/sg1/200/200',
     status: 'ONGOING',
-    lectures: [{ id: 1, title: 'React 101', instructor: 'tester' }],
+    lectures: [
+      {
+        id: 203,
+        title: '완전 초보를 위한 React 기초 강의',
+        instructor: '강사A',
+      },
+      { id: 204, title: 'TypeScript 완벽 가이드', instructor: '강사B' },
+    ],
     reviews: [
       { id: 1, is_mine: true, star_rating: 5, content: '좋아요' },
       { id: 2, is_mine: false, star_rating: 4, content: '도움 됐습니다' },
@@ -25,7 +32,7 @@ export const mockStudyGroupList = [
     current_headcount: 10,
     profile_img_url: 'https://picsum.photos/seed/sg2/200/200',
     status: 'ENDED',
-    lectures: [{ id: 2, title: 'Node Basics', instructor: 'tester' }],
+    lectures: [{ id: 205, title: 'Node.js 입문', instructor: '강사C' }],
     reviews: [],
   },
   {
@@ -38,7 +45,7 @@ export const mockStudyGroupList = [
     current_headcount: 3,
     profile_img_url: 'https://picsum.photos/seed/sg3/200/200',
     status: 'ONGOING',
-    lectures: [{ id: 3, title: 'Vue Intro', instructor: 'tester' }],
+    lectures: [{ id: 206, title: 'Vue 3 시작하기', instructor: '강사D' }],
     reviews: [],
   },
   {
@@ -51,7 +58,9 @@ export const mockStudyGroupList = [
     current_headcount: 3,
     profile_img_url: 'https://picsum.photos/seed/sg3/200/200',
     status: 'ONGOING',
-    lectures: [{ id: 3, title: 'Vue Intro', instructor: 'tester' }],
+    lectures: [
+      { id: 207, title: '라면으로 배우는 요리 기초', instructor: '강사E' },
+    ],
     reviews: [],
   },
 ]
@@ -68,10 +77,17 @@ export const mockStudyGroupDetail = {
   status: 'ONGOING',
   lectures: [
     {
-      id: 1,
-      title: 'React 101',
-      instructor: 'tester',
+      id: 203,
+      title: '완전 초보를 위한 React 기초 강의',
+      instructor: '강사A',
       thumbnail_img_url: 'https://picsum.photos/seed/lec1/200/120',
+      url_link: 'https://example.com',
+    },
+    {
+      id: 204,
+      title: 'TypeScript 완벽 가이드',
+      instructor: '강사B',
+      thumbnail_img_url: 'https://picsum.photos/seed/lec2/200/120',
       url_link: 'https://example.com',
     },
   ],
