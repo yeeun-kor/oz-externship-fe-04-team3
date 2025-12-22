@@ -1,17 +1,10 @@
+import useUserRecommendLecture from '@/hooks/useUserRecommendLecture'
 import { useAuthStore } from '@/store/userStore'
-import type { Lecture } from '@/types/lecture'
 import { Badge } from '../common/badge'
 import LectureCard from './LectureCard'
 
-interface LectureRecommendSectionProps {
-  lectureList: Lecture[]
-}
-
-export default function LectureRecommendSection(
-  props: LectureRecommendSectionProps
-) {
-  const { lectureList } = props
-
+export default function LectureRecommendSection() {
+  const { data } = useUserRecommendLecture(3)
   /* 유저 상태 */
   const { user } = useAuthStore()
   return (
@@ -25,7 +18,7 @@ export default function LectureRecommendSection(
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {lectureList?.slice(0, 3).map((i) => (
+          {data?.results.map((i) => (
             <LectureCard key={i.id} {...i}></LectureCard>
           ))}
         </div>

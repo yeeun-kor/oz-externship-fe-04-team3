@@ -70,4 +70,5 @@ export interface LecturesParams {
     | 'it'
     | 'hardware'
     | 'design'
+  max_count?: number
 }

@@ -87,4 +87,31 @@ export const lectureHandlers = [
 
     return HttpResponse.json(response)
   }),
+
+  http.get('/api/v1/lectures/recommends', async ({ request }) => {
+    const url = new URL(request.url)
+    const maxCountParam = url.searchParams.get('max_count')
+    const maxCount = Math.min(
+      Math.max(parseInt(maxCountParam || '3'), 1), // 최소 1
+      10 // 최대 10
+    )
+
+    // 랜덤 추천 로직 (실제로는 사용자 관심사 기반)
+    const highRatedLectures = [...allLectures]
+
+    // 2. 랜덤 셔플
+    const shuffled = highRatedLectures.sort(() => Math.random() - 0.5)
+
+    // 3. max_count만큼 선택
+    const recommended = shuffled.slice(0, maxCount)
+
+    const response: LecturePageResponse = {
+      count: recommended.length,
+      next: null,
+      previous: null,
+      results: recommended,
+    }
+
+    return HttpResponse.json(response)
+  }),
 ]

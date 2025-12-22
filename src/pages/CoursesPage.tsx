@@ -20,6 +20,8 @@ export default function Courses() {
   >()
   const [sort, setSort] = useState<LecturesParams['sort'] | undefined>()
 
+  //추천강의 불러오기
+
   //무한쿼리 불러오기
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteScroll({
@@ -43,13 +45,6 @@ export default function Courses() {
     },
   })
 
-  //inView 변할 때 마다, 다음페이지 호출
-  // useEffect(() => {
-  //   if (inView && hasNextPage && !isFetchingNextPage) {
-  //     fetchNextPage()
-  //   }
-  // }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
-
   /* 유저 상태 */
   const { loginState } = useAuthStore()
 
@@ -63,9 +58,7 @@ export default function Courses() {
           </p>
         </div>
         {loginState === 'USER' ? (
-          <LectureRecommendSection
-            lectureList={data?.pages.flatMap((page) => page.results) || []}
-          ></LectureRecommendSection>
+          <LectureRecommendSection />
         ) : (
           <GuestRecommendSection
             title="강의를"
