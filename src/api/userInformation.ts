@@ -10,7 +10,7 @@ export const getUserInformationApi = async (): Promise<UserInformation> => {
 //리프레쉬토큰값 보내서 액세스토큰값 받아오는api
 export const getAccessTokenApi = async (): Promise<string> => {
   const { data } = await axiosInstance.post<{ accessToken: string }>(
-    '/v1/refresh'
+    '/v1/accounts/token/refresh'
   )
   return data.accessToken
 }
