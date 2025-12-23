@@ -38,12 +38,33 @@ axiosInstance.interceptors.response.use(
 
     // 401: 토큰 갱신 후 재시도
     if (status === 401) {
-      try {
-        const access_token = await getAccessTokenApi()
-        useAuthStore.getState().setAccessToken(access_token)
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
-        return axiosInstance(originalRequest) //헤더에 토큰 다시 넣어서 재요청
-      } catch (error) {
+      const { accessToken } = useAuthStore.getState()
+      // 재발급 시도 조건
+      if (accessToken) {
+        console.log('🔄 토큰 만료 감지: 토큰 갱신 시도...')
+
+        // 재시도 확인
+        //_retry가 이미 true인지 확인( 여기에선 당연히 undefined → false)
+        if (originalRequest._retry) {
+          console.log('⚠️ 이미 재시도한 요청입니다. 비회원으로 전환합니다.')
+          useAuthStore.getState().clearAuth()
+          return Promise.reject(error)
+        }
+
+        originalRequest._retry = true
+        try {
+          const access_token = await getAccessTokenApi()
+          useAuthStore.getState().setAccessToken(access_token)
+          originalRequest.headers.Authorization = `Bearer ${access_token}`
+          return axiosInstance(originalRequest) //헤더에 토큰 다시 넣어서 재요청
+        } catch (refreshError) {
+          console.log('⚠️ 토큰 재발급 실패: 비회원으로 전환합니다.')
+          useAuthStore.getState().clearAuth()
+          return Promise.reject(refreshError)
+        }
+      } else {
+        // 비회원 상태면 토큰 재발급 시도 없이 에러 반환
+        console.log('ℹ️ 비회원 상태입니다. 비회원으로 서비스를 이용합니다.')
         return Promise.reject(error)
       }
     }

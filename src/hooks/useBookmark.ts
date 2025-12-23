@@ -1,17 +1,19 @@
 import { addBookmark, deleteBookmark, getBookmark } from '@/api/lecture'
 import { showToast } from '@/components/common/toast/Toast'
+import { useAuthStore } from '@/store/userStore'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 /* 북마크 처리 커스텀 리액트쿼리 (로그인상태 boolean) */
-export function useBookmark(isLoggedIn: boolean) {
+export function useBookmark() {
   //queryClient 호출 invalidateQueries 사용 (캐시를 무효화 → 데이터 다시 fetch )
   const queryClient = useQueryClient()
+  const { loginState } = useAuthStore()
 
   //목록 불러오기
   const getBookmarkQuery = useQuery({
     queryKey: ['bookmarkList'],
     queryFn: getBookmark,
-    enabled: isLoggedIn,
+    enabled: loginState === 'USER',
   })
 
   //북마크 추가 useMutation (캐시무효화 사용되는 쿼리키)

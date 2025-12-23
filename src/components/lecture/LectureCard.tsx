@@ -53,7 +53,7 @@ export default function LectureCard(lecture: Lecture) {
   const { loginState } = useAuthStore()
   /* 북마크 커스텀 상태 */
   const { addBookmarkMutation, deleteBookmarkMutation, getBookmarkQuery } =
-    useBookmark(loginState === 'USER')
+    useBookmark()
 
   const bookmarks = getBookmarkQuery.data?.results || []
   const isBookmarked = bookmarks.some((i) => i.id === id)
@@ -83,9 +83,13 @@ export default function LectureCard(lecture: Lecture) {
         <CardAction className="absolute justify-between px-3 py-3">
           <div className="absolute top-2 flex flex-col gap-2">
             <Badge variant={'platform'}>{platform}</Badge>
-            <Badge variant={'discount'}>
-              {getDiscount(discounted_price, original_price)}% 할인
-            </Badge>
+            {getDiscount(discounted_price, original_price) !== null ? (
+              <Badge variant={'discount'}>
+                {getDiscount(discounted_price, original_price)}% 할인
+              </Badge>
+            ) : (
+              ''
+            )}
           </div>
           <Button
             variant="outline"
@@ -122,10 +126,18 @@ export default function LectureCard(lecture: Lecture) {
         <CardDescription>{instructor}</CardDescription>
         {getRatingStarsIcon(average_rating)}
         <div className="Card-Content-price flex items-center gap-2">
-          <h4>₩{discounted_price.toLocaleString('ko-KR')}</h4>
-          <h6 className="text-sm text-gray-400 line-through">
-            ₩{original_price.toLocaleString('ko-KR')}
-          </h6>
+          {discounted_price === 0 && original_price === 0 ? (
+            <h4>무료</h4>
+          ) : discounted_price === 0 ? (
+            <h4>₩{original_price.toLocaleString('ko-KR')}</h4>
+          ) : (
+            <>
+              <h4>₩{discounted_price.toLocaleString('ko-KR')}</h4>
+              <h6 className="text-sm text-gray-400 line-through">
+                ₩{original_price.toLocaleString('ko-KR')}
+              </h6>
+            </>
+          )}
         </div>
       </CardContent>
       <CardFooter className="relative">
