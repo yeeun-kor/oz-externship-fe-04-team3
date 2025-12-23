@@ -22,6 +22,8 @@ axiosInstance.interceptors.request.use((config) => {
 })
 
 // 모드 응답에 공통 에러 로직 처리
+let refreshPromise: Promise<string> | null = null
+
 axiosInstance.interceptors.response.use(
   function (response) {
     return response
@@ -29,6 +31,9 @@ axiosInstance.interceptors.response.use(
   async function (error) {
     const originalRequest = error.config //에러헤더
     const status = error.response?.status //에러응답코드
+    const isRefreshCall = originalRequest.url.includes(
+      '/v1/accounts/token/refresh'
+    )
 
     // 네트워크 에러 처리
     if (!error.response) {
@@ -38,34 +43,31 @@ axiosInstance.interceptors.response.use(
 
     // 401: 토큰 갱신 후 재시도
     if (status === 401) {
-      const { accessToken } = useAuthStore.getState()
-      // 재발급 시도 조건
-      if (accessToken) {
-        console.log('🔄 토큰 만료 감지: 토큰 갱신 시도...')
-
-        // 재시도 확인
-        //_retry가 이미 true인지 확인( 여기에선 당연히 undefined → false)
-        if (originalRequest._retry) {
-          console.log('⚠️ 이미 재시도한 요청입니다. 비회원으로 전환합니다.')
-          useAuthStore.getState().clearAuth()
-          return Promise.reject(error)
-        }
-
-        originalRequest._retry = true
-        try {
-          const access_token = await getAccessTokenApi()
-          useAuthStore.getState().setAccessToken(access_token)
-          originalRequest.headers.Authorization = `Bearer ${access_token}`
-          return axiosInstance(originalRequest) //헤더에 토큰 다시 넣어서 재요청
-        } catch (refreshError) {
-          console.log('⚠️ 토큰 재발급 실패: 비회원으로 전환합니다.')
-          useAuthStore.getState().clearAuth()
-          return Promise.reject(refreshError)
-        }
-      } else {
-        // 비회원 상태면 토큰 재발급 시도 없이 에러 반환
-        console.log('ℹ️ 비회원 상태입니다. 비회원으로 서비스를 이용합니다.')
+      // 리프레시 호출 자체가 401이면 더 이상 시도하지 않고 클리어
+      if (isRefreshCall) {
+        useAuthStore.getState().clearAuth?.()
         return Promise.reject(error)
+      }
+      // 중복 재시도 방지
+      if (originalRequest._retry) {
+        useAuthStore.getState().clearAuth?.()
+        return Promise.reject(error)
+      }
+
+      originalRequest._retry = true
+      try {
+        if (!refreshPromise) {
+          refreshPromise = getAccessTokenApi()
+        }
+        const accessToken = await refreshPromise
+        refreshPromise = null
+        useAuthStore.getState().setAccessToken(accessToken)
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+        return axiosInstance(originalRequest) //헤더에 토큰 다시 넣어서 재요청
+      } catch (refreshError) {
+        refreshPromise = null
+        useAuthStore.getState().clearAuth?.()
+        return Promise.reject(refreshError)
       }
     }
     // 401과 400을 제외한 에러코드
