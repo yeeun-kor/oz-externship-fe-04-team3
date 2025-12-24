@@ -9,6 +9,7 @@ import { getAccessTokenApi } from '@/api/userInformation'
 import { useNotificationStream } from '@/hooks/useNotificationStream'
 import type { AlarmItem } from '@/types/alarm'
 import { useAuthStore } from '@/store/userStore'
+import { API_BASE_URL } from '@/constant/api'
 
 import NotificationCard from './NotificationCard'
 
@@ -35,20 +36,17 @@ export default function NotificationModal({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    totalCount,
+    unreadCount,
+    readCount,
   } = useNotifications(activeFilter)
   const { markAllRead, markRead } = useNotificationActions()
   const listRef = useRef<HTMLDivElement | null>(null)
-  const totalCount = alarms.length
-  const unreadCount = alarms.filter((a) => !a.isRead).length
-  const readCount = totalCount - unreadCount
   const controls = useAnimation()
   const setAccessToken = useAuthStore((s) => s.setAccessToken)
   const clearAuth = useAuthStore((s) => s.clearAuth)
 
   useNotificationStream({
-    onMessage: () => {
-      refetch()
-    },
     onUnauthorized: async () => {
       try {
         const newToken = await getAccessTokenApi()
@@ -87,14 +85,31 @@ export default function NotificationModal({
   }
 
   const handleMarkOne = (alarm: AlarmItem) => {
-    markRead(alarm.id).finally(() => {
-      refetch()
-      if (alarm.backUrl) {
-        window.location.href = alarm.backUrl
-      } else {
-        window.location.href = '/'
-      }
-    })
+    markRead(alarm.id)
+      .then(() => {
+        if (!alarm.backUrl) return
+        // 채팅방 이동: backUrl이 "group_id:{study_group_id}" 형태일 때 현재 페이지에 쿼리 파라미터로 붙여 이동
+        const groupMatch = alarm.backUrl.match(/^study_group_id\s*:\s*(.+)$/)
+        if (groupMatch?.[1]) {
+          const targetGroupId = groupMatch[1].trim()
+          const url = new URL(window.location.href)
+          url.searchParams.set('group_id', targetGroupId)
+          window.history.replaceState({}, '', url.toString())
+          return
+        }
+
+        const backendHost = new URL(API_BASE_URL).host
+        const targetHost = new URL(alarm.backUrl).host
+        const shouldNewTab = backendHost !== targetHost
+        if (shouldNewTab) {
+          window.open(alarm.backUrl, '_blank', 'noopener,noreferrer')
+        } else {
+          window.location.href = alarm.backUrl
+        }
+      })
+      .catch(() => {
+        // 읽기 실패 시에는 이동하지 않음
+      })
   }
 
   const renderList = () => {
