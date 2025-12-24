@@ -36,18 +36,20 @@ export default function Select({
 }: SelectProps) {
   return (
     <div className="flex w-full flex-col">
-      <Label htmlFor={name}>
-        {required ? (
-          <div className="mb-2 flex gap-1 text-sm font-medium text-gray-700">
-            <p> {title}</p>
-            <p className="text-red-500">*</p>
-          </div>
-        ) : (
-          <div className="mb-2 flex gap-1 text-sm font-medium text-gray-700">
-            <p> {title}</p>
-          </div>
-        )}
-      </Label>
+      {title && (
+        <Label htmlFor={name}>
+          {required ? (
+            <div className="mb-2 flex gap-1 text-sm font-medium text-gray-700">
+              <p> {title}</p>
+              <p className="text-red-500">*</p>
+            </div>
+          ) : (
+            <div className="mb-2 flex gap-1 text-sm font-medium text-gray-700">
+              <p> {title}</p>
+            </div>
+          )}
+        </Label>
+      )}
       <SelectField
         name={name}
         value={value}

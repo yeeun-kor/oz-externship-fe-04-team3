@@ -5,7 +5,7 @@ type searchResultProps = {
 }
 export default function NoSearchResult({ searchResult }: searchResultProps) {
   return (
-    <div className="h-[382px] w-full justify-center rounded-2xl border border-gray-200 bg-gray-50 p-[25px] text-center md:w-[854px]">
+    <div className="h-[382px] w-full justify-center rounded-2xl border border-gray-200 bg-gray-50 p-[25px] text-center">
       <div className="flex h-full flex-col items-center justify-center text-center">
         <div className="mb-6">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">

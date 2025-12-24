@@ -1,7 +1,7 @@
 import LoadingUi from '@/assets/images/loading.png'
 export default function Loading() {
   return (
-    <div className="h-[278px] w-[854px] justify-center rounded-2xl border border-gray-200 bg-gray-50 p-[25px] text-center">
+    <div className="h-[278px] justify-center rounded-2xl border border-gray-200 bg-gray-50 p-[25px] text-center">
       <div className="flex h-full flex-col items-center justify-center px-[210px] text-center">
         <div className="pb-[24px]">
           <div className="flex items-center justify-center pt-12 pb-6">

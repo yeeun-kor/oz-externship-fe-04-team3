@@ -1,10 +1,13 @@
 import { getLecturesApi } from '@/api/lecture'
 import { Select } from '@/components/common'
 import GuestRecommendSection from '@/components/common/GuestRecommendSection'
+import Loading from '@/components/common/Loading'
 import { Input } from '@/components/input'
 import LectureList from '@/components/lecture/LectureList'
 import LectureRecommendSection from '@/components/lecture/LectureRecommendSection'
+import NoSearchResult from '@/components/notFound/NoSearchResult'
 import useInfiniteScroll from '@/hooks/quries/useInfiniteScroll'
+import useDebounce from '@/hooks/useDebounce'
 import { categoryData, sortData } from '@/mappers/lectures/lecture'
 import { useAuthStore } from '@/store/userStore'
 import type { LecturesParams } from '@/types/lecture'
@@ -19,21 +22,22 @@ export default function Courses() {
     LecturesParams['category'] | undefined
   >()
   const [sort, setSort] = useState<LecturesParams['sort'] | undefined>()
-
-  //추천강의 불러오기
-
+  //useDebounce 적용
+  const debouncedInputValue = useDebounce(inputValue)
   //무한쿼리 불러오기
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteScroll({
-      queryKey: ['lectures', inputValue, category, sort],
+      queryKey: ['lectures', debouncedInputValue, category, sort],
       queryFn: (page) =>
         getLecturesApi({
           page,
-          search: inputValue,
+          search: debouncedInputValue,
           category, // 이미 undefined면 그대로
           sort,
         }),
     })
+  // 검색어 결과값 있는지 확인
+  const hasNoResult = data?.pages.every((page) => page.results.length === 0)
   //무한스크롤
   const { ref } = useInView({
     threshold: 0,
@@ -66,7 +70,7 @@ export default function Courses() {
           ></GuestRecommendSection>
         )}
       </section>
-      <section className="courses_filter flex flex-col gap-2 rounded-md border border-gray-200 bg-white p-6 sm:flex-row">
+      <section className="courses_filter flex flex-col items-center gap-2 rounded-md border border-gray-200 bg-white p-6 sm:flex-row">
         <Input
           prefix={<Search />}
           className="h-[38px]"
@@ -102,16 +106,24 @@ export default function Courses() {
           }}
         ></Select>
       </section>
-      <section className="courses_cardlist">
-        <LectureList data={data}></LectureList>
-      </section>
-      {!hasNextPage ? (
+      {isLoading ? (
+        <Loading></Loading>
+      ) : (
+        <section className="courses_cardlist">
+          {/* 검색결과 없으면 NoSearchResult */}
+          {hasNoResult ? (
+            <NoSearchResult searchResult={debouncedInputValue} />
+          ) : (
+            <LectureList data={data}></LectureList>
+          )}
+        </section>
+      )}
+      {!hasNoResult && !hasNextPage && (
         <div className="flex-center mt-12 h-12 rounded-md bg-gray-400 text-center text-white">
           더 이상 강의가 없습니다.
         </div>
-      ) : (
-        <div ref={ref}></div>
       )}
+      {!hasNoResult && hasNextPage && <div ref={ref}></div>}
     </div>
   )
 }

@@ -6,12 +6,12 @@ import { Outlet } from 'react-router'
 function Layout() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
   return (
-    <div className="bg-gray-50">
+    <div className="flex min-h-dvh flex-col bg-gray-50">
       <Header
         isSideBarOpen={isSideBarOpen}
         setIsSideBarOpen={setIsSideBarOpen}
       />
-      <main className="wrapper">
+      <main className="wrapper flex-1">
         <Outlet />
       </main>
       <Footer />

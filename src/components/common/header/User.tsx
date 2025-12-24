@@ -1,5 +1,6 @@
 import notificationIcon from '@/assets/icons/notification.svg'
 import topArrow from '@/assets/icons/topArrow.svg'
+import defaultImg from '@/assets/images/defaultProfileImg.svg'
 import useIsDesktop from '@/hooks/useIsDesktop'
 
 import { AnimatePresence } from 'framer-motion'
@@ -91,9 +92,9 @@ function User() {
       >
         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#FEF9C3]">
           <img
-            src={user?.profile_img_url}
+            src={user?.profile_img_url ? user?.profile_img_url : defaultImg}
             alt="profileIcon"
-            className="object-contain"
+            className="h-full w-full object-cover"
           />
         </div>
         <div className="text-primary-600 text-base">{user?.name}</div>
