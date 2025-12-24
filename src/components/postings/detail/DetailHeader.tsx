@@ -1,13 +1,5 @@
 import type { Recruitment } from '@/types/recruitment'
-import {
-  ArrowLeft,
-  Share2,
-  Bookmark,
-  Edit,
-  User,
-  Calendar,
-  Eye,
-} from 'lucide-react'
+import { ArrowLeft, Share2, Bookmark, User, Calendar, Eye } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { showToast } from '@/components/common/toast/Toast'
 import { useState } from 'react'

@@ -346,24 +346,25 @@ export default function WriteForm() {
     enabled: lecturesFromGroup.length > 0,
   })
 
-  const { data: detail } = useQuery<
-    | {
-        title: string
-        content: string
-        estimated_fee?: number
-        expected_headcount: number
-        close_at: string
-        tags: { id: number; name: string }[]
-        image_urls?: string[]
-        study_group?: number
-        files?: { file_name: string; file_url: string }[]
-      }
-    | undefined
-  >({
+  type WriteRecruitmentDetail = {
+    title: string
+    content: string
+    estimated_fee?: number
+    expected_headcount: number
+    close_at: string
+    tags: { id: number; name: string }[]
+    image_urls?: string | string[]
+    study_group?: number
+    files?: { file_name: string; file_url: string }[]
+  }
+
+  const { data: detail } = useQuery<WriteRecruitmentDetail | undefined>({
     queryKey: ['my-recruitment-detail', recruitmentId],
     queryFn: async () => {
       if (!recruitmentId) return undefined
-      const res = await getRecruitmentDetail(recruitmentId)
+      const res = (await getRecruitmentDetail(
+        recruitmentId
+      )) as unknown as WriteRecruitmentDetail
       // 디버깅용: 상세 데이터 확인
       // eslint-disable-next-line no-console
       console.log('Recruitment detail', res)
@@ -417,24 +418,26 @@ export default function WriteForm() {
       actions.setStudyGroupId(String(detail.study_group))
     }
     if (detail.files?.length) {
-      const presetFiles = detail.files.map((f, idx) => {
-        const lowerName = f.file_name.toLowerCase()
-        const lowerUrl = f.file_url.toLowerCase()
-        const isImage =
-          /\.(png|jpe?g|webp)$/.test(lowerName) ||
-          /\.(png|jpe?g|webp)$/.test(lowerUrl)
-        const isPdf = lowerName.endsWith('.pdf') || lowerUrl.endsWith('.pdf')
-        let type = 'application/octet-stream'
-        if (isImage) type = 'image/'
-        else if (isPdf) type = 'application/pdf'
-        return {
-          id: `${f.file_name}-${idx}`,
-          name: f.file_name,
-          size: 0,
-          type,
-          url: f.file_url,
+      const presetFiles = detail.files.map(
+        (f: { file_name: string; file_url: string }, idx: number) => {
+          const lowerName = f.file_name.toLowerCase()
+          const lowerUrl = f.file_url.toLowerCase()
+          const isImage =
+            /\.(png|jpe?g|webp)$/.test(lowerName) ||
+            /\.(png|jpe?g|webp)$/.test(lowerUrl)
+          const isPdf = lowerName.endsWith('.pdf') || lowerUrl.endsWith('.pdf')
+          let type = 'application/octet-stream'
+          if (isImage) type = 'image/'
+          else if (isPdf) type = 'application/pdf'
+          return {
+            id: `${f.file_name}-${idx}`,
+            name: f.file_name,
+            size: 0,
+            type,
+            url: f.file_url,
+          }
         }
-      })
+      )
       actions.setUploadedFiles(presetFiles)
     }
     if (detail.image_urls) {
@@ -443,9 +446,12 @@ export default function WriteForm() {
         : [detail.image_urls]
       actions.setImageUrls(urls.filter(Boolean))
     }
-    setTagIds(detail.tags?.map((t) => t.id) ?? [])
+    setTagIds(detail.tags?.map((t: { id: number }) => t.id) ?? [])
     setSelectedTags(
-      detail.tags?.map((t) => ({ id: String(t.id), name: t.name })) ?? []
+      detail.tags?.map((t: { id: number; name: string }) => ({
+        id: String(t.id),
+        name: t.name,
+      })) ?? []
     )
     if (detail.close_at) {
       handleDeadlineChange(new Date(detail.close_at))
