@@ -7,8 +7,10 @@ import { useState, useEffect } from 'react'
 import type { MyRecruitmentParams } from '@/types/myRecruitment'
 import { useMyRecruitments } from '@/hooks/quries/useMyRecruitments'
 import { useInView } from 'react-intersection-observer'
+import { useNavigate } from 'react-router'
 
 export default function Manage() {
+  const navigate = useNavigate()
   const [status, setStatus] = useState<'all' | 'open' | 'closed'>('all')
   const [sort, setSort] = useState<MyRecruitmentParams['sort']>('latest')
 
@@ -43,7 +45,10 @@ export default function Manage() {
 
   return (
     <div className="mx-auto flex flex-col gap-6 px-4 py-6">
-      <ManageHeader />
+      <ManageHeader
+        onClickWrite={() => navigate('/write')}
+        onClickBack={() => navigate(-1)}
+      />
       <ManageDashboard
         totalCount={totalCount}
         openCount={openCount}

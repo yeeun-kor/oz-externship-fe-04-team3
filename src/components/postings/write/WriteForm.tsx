@@ -8,8 +8,14 @@ import TagSvg from '@/assets/icons/Tag.svg'
 import { FileUploader } from '@/components/common/uploader/FileUploader'
 import { useWriteRecruitmentForm } from '@/hooks/useWriteRecruitmentForm'
 import { TagSelectModal, type TagOption } from './TagSelectModal'
-import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react'
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getRecruitmentDetail } from '@/api/recruitments'
 import { getLecturesApi } from '@/api/lecture'
@@ -180,11 +186,13 @@ function ExtraInfoSection({
   actions,
   selectedTags,
   setSelectedTags,
+  totalLecturePrice,
   isTagModalOpen,
   onOpenTagModal,
 }: ExtraInfoProps & {
   isTagModalOpen: boolean
   onOpenTagModal: (open: boolean) => void
+  totalLecturePrice: number
 }) {
   const { estimatedFee, uploadedFiles } = state
   const { setEstimatedFee, setUploadedFiles, onUploadFile, setTagIds } = actions
@@ -204,6 +212,11 @@ function ExtraInfoSection({
           name="estimated_fee"
           value={estimatedFee}
           onChange={(e) => setEstimatedFee(e.target.value)}
+          onBlur={() => {
+            if (estimatedFee !== '') return
+            const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
+            setEstimatedFee(String(fallback))
+          }}
         />
       </div>
       <div>
@@ -294,12 +307,18 @@ function ExtraInfoSection({
 }
 
 export default function WriteForm() {
-  const { state, actions, options } = useWriteRecruitmentForm()
   const [selectedTags, setSelectedTags] = useState<TagOption[]>([])
   const [isTagModalOpen, setIsTagModalOpen] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const recruitmentId = searchParams.get('recruitmentId')
+  const isEditing = location.pathname.includes('/edit') || !!recruitmentId
+  const { state, actions, options } = useWriteRecruitmentForm(
+    recruitmentId || undefined,
+    isEditing
+  )
   const {
     setTitle,
     setContent,
@@ -336,15 +355,24 @@ export default function WriteForm() {
         close_at: string
         tags: { id: number; name: string }[]
         image_urls?: string[]
+        study_group?: number
+        files?: { file_name: string; file_url: string }[]
       }
     | undefined
   >({
     queryKey: ['my-recruitment-detail', recruitmentId],
     queryFn: async () => {
       if (!recruitmentId) return undefined
-      return getRecruitmentDetail(recruitmentId)
+      const res = await getRecruitmentDetail(recruitmentId)
+      // 디버깅용: 상세 데이터 확인
+      // eslint-disable-next-line no-console
+      console.log('Recruitment detail', res)
+      return res
     },
     enabled: !!recruitmentId,
+    staleTime: 0, // 페이지 진입 시마다 최신 정보 조회
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
   const formattedLectures = lectureDetails.map((lec) => ({
@@ -357,14 +385,64 @@ export default function WriteForm() {
     0
   )
 
+  // 그룹이 선택된 상태라면 강의 합계(없으면 0)로 예상비용을 자동 세팅
+  useEffect(() => {
+    if (!state.studyGroupId) return
+    const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
+    setEstimatedFee(String(fallback))
+  }, [state.studyGroupId, totalLecturePrice, setEstimatedFee])
+
+  // 스터디 그룹 변경 시 강의 합계로 예상 비용 자동 입력 (강의 없으면 0)
+  const prevGroupIdRef = useRef(state.studyGroupId)
+  useEffect(() => {
+    if (!state.studyGroupId) return
+    if (prevGroupIdRef.current !== state.studyGroupId) {
+      const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
+      actions.setEstimatedFee(String(fallback))
+      prevGroupIdRef.current = state.studyGroupId
+    }
+  }, [state.studyGroupId, totalLecturePrice, actions])
+
   useEffect(() => {
     if (!detail || initialized) return
     setTitle(detail.title)
     setContent(detail.content)
-    setEstimatedFee(detail.estimated_fee ? String(detail.estimated_fee) : '')
+    setEstimatedFee(
+      detail.estimated_fee !== undefined ? String(detail.estimated_fee) : ''
+    )
     setExpectedHeadcount(
       detail.expected_headcount ? String(detail.expected_headcount) : ''
     )
+    if (detail.study_group) {
+      actions.setStudyGroupId(String(detail.study_group))
+    }
+    if (detail.files?.length) {
+      const presetFiles = detail.files.map((f, idx) => {
+        const lowerName = f.file_name.toLowerCase()
+        const lowerUrl = f.file_url.toLowerCase()
+        const isImage =
+          /\.(png|jpe?g|webp)$/.test(lowerName) ||
+          /\.(png|jpe?g|webp)$/.test(lowerUrl)
+        const isPdf = lowerName.endsWith('.pdf') || lowerUrl.endsWith('.pdf')
+        let type = 'application/octet-stream'
+        if (isImage) type = 'image/'
+        else if (isPdf) type = 'application/pdf'
+        return {
+          id: `${f.file_name}-${idx}`,
+          name: f.file_name,
+          size: 0,
+          type,
+          url: f.file_url,
+        }
+      })
+      actions.setUploadedFiles(presetFiles)
+    }
+    if (detail.image_urls) {
+      const urls = Array.isArray(detail.image_urls)
+        ? detail.image_urls
+        : [detail.image_urls]
+      actions.setImageUrls(urls.filter(Boolean))
+    }
     setTagIds(detail.tags?.map((t) => t.id) ?? [])
     setSelectedTags(
       detail.tags?.map((t) => ({ id: String(t.id), name: t.name })) ?? []
@@ -400,15 +478,21 @@ export default function WriteForm() {
         actions={actions}
         selectedTags={selectedTags}
         setSelectedTags={setSelectedTags}
+        totalLecturePrice={totalLecturePrice}
         isTagModalOpen={isTagModalOpen}
         onOpenTagModal={setIsTagModalOpen}
       />
       <section className="my-8 flex justify-end gap-4 border-t border-gray-200 pt-[25px]">
-        <Button variant="outline" type="button" className="px-6 py-3">
+        <Button
+          variant="outline"
+          type="button"
+          className="px-6 py-3"
+          onClick={() => navigate(-1)}
+        >
           취소
         </Button>
         <Button variant="primary" type="submit" className="px-6 py-3">
-          공고 등록
+          {isEditing ? '공고 수정' : '공고 등록'}
         </Button>
       </section>
     </form>

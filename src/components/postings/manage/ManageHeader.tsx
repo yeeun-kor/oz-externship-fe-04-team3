@@ -1,13 +1,22 @@
 import { Button } from '@/components/common'
 import { ArrowLeft, Plus } from 'lucide-react'
 
-export default function ManageHeader() {
+type ManageHeaderProps = {
+  onClickWrite?: () => void
+  onClickBack?: () => void
+}
+
+export default function ManageHeader({
+  onClickWrite,
+  onClickBack,
+}: ManageHeaderProps) {
   return (
     <div className="flex-between flex-col gap-8 md:flex-row">
       <div className="flex-center mr-auto gap-4">
         <Button
           variant="ghost"
           className="h-10 w-10 cursor-pointer rounded-full bg-gray-100 hover:bg-gray-200"
+          onClick={onClickBack}
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
@@ -21,6 +30,7 @@ export default function ManageHeader() {
       <Button
         variant="primary"
         className="mr-auto w-full cursor-pointer md:mr-0 md:w-fit"
+        onClick={onClickWrite}
       >
         <Plus className="h-6 w-6" /> 새 공고 작성하기
       </Button>

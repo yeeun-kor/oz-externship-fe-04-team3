@@ -1,18 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { getStudyGroupDetail, getStudyGroups } from '@/api/studyGroup'
-import { getPresignedUrl } from '@/api/uploads'
+import { getPresignedUrl, uploadToPresigned } from '@/api/uploads'
 import { showToast } from '@/components/common/toast/Toast'
 import { axiosInstance } from '@/api/axios'
 import type { UploadedFile } from '@/components/common/uploader/FileUploader'
 
 const formatCloseAt = (date: Date) => {
+  // 로컬 타임존 기준으로 00:00:00.000 시각을 ISO+오프셋 형태로 생성
   const yyyy = date.getFullYear()
   const mm = String(date.getMonth() + 1).padStart(2, '0')
   const dd = String(date.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd} 00:00:00`
+  const offsetMin = -new Date().getTimezoneOffset()
+  const sign = offsetMin >= 0 ? '+' : '-'
+  const pad = (n: number) => String(Math.abs(n)).padStart(2, '0')
+  const hhOffset = pad(Math.floor(Math.abs(offsetMin) / 60))
+  const mmOffset = pad(Math.abs(offsetMin) % 60)
+  return `${yyyy}-${mm}-${dd}T00:00:00.000${sign}${hhOffset}:${mmOffset}`
 }
 
 const RecruitmentPayloadSchema = z.object({
@@ -21,7 +27,7 @@ const RecruitmentPayloadSchema = z.object({
   content: z.string().min(1, '내용을 입력해주세요.'),
   expected_headcount: z.number().int().positive(),
   close_at: z.string().min(1),
-  estimated_fee: z.number().int().optional(),
+  estimated_fee: z.number().int().nonnegative(),
   tags: z.array(z.number().int()).optional(),
   image_urls: z.array(z.string().url()).max(5).optional(),
   files: z
@@ -34,7 +40,10 @@ const RecruitmentPayloadSchema = z.object({
     .optional(),
 })
 
-export function useWriteRecruitmentForm() {
+export function useWriteRecruitmentForm(
+  recruitmentId?: string,
+  isEditing = false
+) {
   const navigate = useNavigate()
   const [deadline, setDeadline] = useState<Date | undefined>()
   const [content, setContent] = useState('')
@@ -46,6 +55,7 @@ export function useWriteRecruitmentForm() {
   const [studyGroupId, setStudyGroupId] = useState<string>('')
   const [expectedHeadcount, setExpectedHeadcount] = useState<string>('')
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  const [totalLecturePrice, setTotalLecturePrice] = useState(0)
 
   const { data: studyGroups = [] } = useQuery({
     queryKey: ['study-groups'],
@@ -71,6 +81,29 @@ export function useWriteRecruitmentForm() {
     ? Math.max(0, groupDetail.max_headcount - groupDetail.current_headcount)
     : 0
 
+  // 그룹 강의 비용 합계 계산
+  useEffect(() => {
+    if (!groupDetail?.lectures?.length) {
+      setTotalLecturePrice(0)
+      return
+    }
+    type LecturePrice = {
+      discounted_price?: number
+      discount_price?: number
+      original_price?: number
+    }
+    const sum = groupDetail.lectures.reduce((acc, lec) => {
+      const candidate = lec as LecturePrice
+      const price =
+        candidate.discounted_price ??
+        candidate.discount_price ??
+        candidate.original_price ??
+        0
+      return acc + price
+    }, 0)
+    setTotalLecturePrice(sum)
+  }, [groupDetail])
+
   const headcountOptions = useMemo(() => {
     if (remainingHeadcount <= 0) return []
     return Array.from({ length: remainingHeadcount }, (_, idx) => {
@@ -95,39 +128,49 @@ export function useWriteRecruitmentForm() {
   }
 
   const onUploadImage = async (file: File) => {
-    const ext = file.name.split('.').pop() ?? 'png'
+    const ext = (file.name.split('.').pop() ?? 'png').toLowerCase()
+    const contentType = file.type || 'application/octet-stream'
     const presigned = await getPresignedUrl({
       type: 'RECRUITMENT_IMAGE',
-      content_type: file.type,
-      file_name: file.name.replace(`.${ext}`, ''),
+      content_type: contentType,
+      file_name: file.name, // 확장자 포함 원본 이름 그대로 전송
       file_ext: ext,
     })
-    // TODO: presigned.upload_url로 실제 이미지를 PUT 전송한 뒤 성공 시 file_url을 사용하도록 연동 필요
+    await uploadToPresigned(presigned.upload_url, file, presigned.headers)
     setImageUrls((prev) => [...prev, presigned.file_url])
     return presigned.file_url
   }
 
   const onUploadFile = async (file: File) => {
-    const ext = file.name.split('.').pop() ?? 'dat'
+    const ext = (file.name.split('.').pop() ?? 'dat').toLowerCase()
+    const contentType = file.type || 'application/octet-stream'
     const presigned = await getPresignedUrl({
       type: 'RECRUITMENT_ATTACHMENT',
-      content_type: file.type || 'application/octet-stream',
-      file_name: file.name.replace(`.${ext}`, ''),
+      content_type: contentType,
+      file_name: file.name, // 확장자 포함 원본 이름 그대로 전송
       file_ext: ext,
     })
-    // TODO: presigned.upload_url로 실제 파일을 PUT 업로드하도록 백엔드 연동 필요
-    return presigned.file_url
+    await uploadToPresigned(presigned.upload_url, file, presigned.headers)
+    return { previewUrl: presigned.file_url, key: presigned.key }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    let estimatedFeeValue = estimatedFee
+    if (estimatedFeeValue === '') {
+      const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
+      estimatedFeeValue = String(fallback)
+      setEstimatedFee(estimatedFeeValue)
+    }
 
     if (
       !studyGroupId ||
       !expectedHeadcount ||
       !deadline ||
       !title ||
-      !content
+      !content ||
+      estimatedFeeValue === ''
     ) {
       showToast.warning('입력값 확인', '필수 항목을 모두 입력해주세요.')
       return
@@ -139,12 +182,13 @@ export function useWriteRecruitmentForm() {
       content,
       expected_headcount: Number(expectedHeadcount),
       close_at: formatCloseAt(deadline),
-      estimated_fee: estimatedFee ? Number(estimatedFee) : undefined,
+      estimated_fee: Number(estimatedFeeValue),
       tags: tagIds.length ? tagIds : undefined,
       image_urls: imageUrls,
+      // TODO: 첨부파일 수정 정책(덮어쓰기 vs 개별 삭제)이 확정되면 로직 보완 필요
       files: uploadedFiles.map((f) => ({
-        file_name: f.name,
-        file_url: f.url,
+        file_name: f.name, // 확장자 포함 원본 이름
+        file_url: f.url, // presigned 응답의 file_url(전체 URL)
       })),
     }
 
@@ -157,8 +201,16 @@ export function useWriteRecruitmentForm() {
     }
 
     try {
-      await axiosInstance.post('/v1/recruitments', parsed.data)
-      showToast.success('공고 등록', '공고가 등록되었습니다.')
+      if (isEditing && recruitmentId) {
+        await axiosInstance.patch(
+          `/v1/recruitments/${recruitmentId}`,
+          parsed.data
+        )
+        showToast.success('공고 수정', '공고가 수정되었습니다.')
+      } else {
+        await axiosInstance.post('/v1/recruitments', parsed.data)
+        showToast.success('공고 등록', '공고가 등록되었습니다.')
+      }
       navigate('/manage')
     } catch (err) {
       showToast.error('공고 등록 실패', (err as Error)?.message ?? '')
@@ -175,6 +227,7 @@ export function useWriteRecruitmentForm() {
     expectedHeadcount,
     uploadedFiles,
     tagIds,
+    imageUrls,
   }
 
   const actions = {
@@ -187,6 +240,7 @@ export function useWriteRecruitmentForm() {
     setExpectedHeadcount,
     setUploadedFiles,
     setTagIds,
+    setImageUrls,
     onUploadImage,
     onUploadFile,
     handleSubmit,

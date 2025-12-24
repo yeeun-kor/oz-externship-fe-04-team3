@@ -8,7 +8,8 @@ export type UploadedFile = {
   id: string
   name: string
   size: number
-  url: string
+  url: string // 미리보기용 URL
+  key?: string // 서버 전송용 key
   type: string
 }
 
@@ -17,7 +18,7 @@ type FileUploaderProps = {
   onChange: (next: UploadedFile[]) => void
   maxCount?: number
   maxSize?: number
-  onUploadFile?: (file: File) => Promise<string>
+  onUploadFile?: (file: File) => Promise<{ previewUrl: string; key: string }>
 }
 
 export function FileUploader({
@@ -28,12 +29,6 @@ export function FileUploader({
   onUploadFile,
 }: FileUploaderProps) {
   const remain = Math.max(0, maxCount - files.length)
-
-  const formatSize = (bytes: number) => {
-    if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
-    if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${bytes} B`
-  }
 
   const handleDrop = async (accepted: File[], rejected: FileRejection[]) => {
     rejected.forEach((rej) => {
@@ -57,9 +52,12 @@ export function FileUploader({
     for (let i = 0; i < sliceEnd; i += 1) {
       const file = accepted[i]
       let url = URL.createObjectURL(file)
+      let key: string | undefined = undefined
       if (onUploadFile) {
         try {
-          url = await onUploadFile(file)
+          const uploaded = await onUploadFile(file)
+          url = uploaded.previewUrl
+          key = uploaded.key
         } catch (err) {
           showToast.error('파일 업로드 실패', (err as Error)?.message ?? '')
           continue
@@ -71,6 +69,7 @@ export function FileUploader({
         size: file.size,
         type: file.type,
         url,
+        key,
       })
     }
 
@@ -187,7 +186,7 @@ export function FileUploader({
                 <X size={14} />
               </Button>
               <div className="mt-1 px-1 text-[11px] text-gray-500">
-                {file.type || 'unknown'} · {formatSize(file.size)}
+                {file.name}
               </div>
             </div>
           ))}
