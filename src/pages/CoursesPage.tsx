@@ -67,7 +67,7 @@ export default function Courses() {
           <GuestRecommendSection
             title="강의를"
             description="로그인하시면 관심 분야를 바탕으로 맞춤형 강의"
-          ></GuestRecommendSection>
+          />
         )}
       </section>
       <section className="courses_filter flex flex-col items-center gap-2 rounded-md border border-gray-200 bg-white p-6 sm:flex-row">
@@ -76,7 +76,7 @@ export default function Courses() {
           className="h-[38px]"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-        ></Input>
+        />
         <Select
           icon={<Folder />}
           name="category"
@@ -90,7 +90,7 @@ export default function Courses() {
                 : (value as LecturesParams['category'])
             )
           }}
-        ></Select>
+        />
         <Select
           name="sort"
           icon={<ArrowDownWideNarrow />}
@@ -104,17 +104,17 @@ export default function Courses() {
                 : (value as LecturesParams['sort'])
             )
           }}
-        ></Select>
+        />
       </section>
       {isLoading ? (
-        <Loading></Loading>
+        <Loading />
       ) : (
         <section className="courses_cardlist">
           {/* 검색결과 없으면 NoSearchResult */}
           {hasNoResult ? (
             <NoSearchResult searchResult={debouncedInputValue} />
           ) : (
-            <LectureList data={data}></LectureList>
+            <LectureList data={data} />
           )}
         </section>
       )}
@@ -123,7 +123,7 @@ export default function Courses() {
           더 이상 강의가 없습니다.
         </div>
       )}
-      {!hasNoResult && hasNextPage && <div ref={ref}></div>}
+      {!hasNoResult && hasNextPage && <div ref={ref} />}
     </div>
   )
 }

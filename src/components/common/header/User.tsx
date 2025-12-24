@@ -92,7 +92,7 @@ function User() {
       >
         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#FEF9C3]">
           <img
-            src={user?.profile_img_url ? user?.profile_img_url : defaultImg}
+            src={user?.profile_img_url ? user.profile_img_url : defaultImg}
             alt="profileIcon"
             className="h-full w-full object-cover"
           />

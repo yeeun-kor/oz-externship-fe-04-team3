@@ -33,6 +33,7 @@ export type LecturePageResponse = {
   previous: string | null
   results: Lecture[]
 }
+export type LectureRecommendResponse = Lecture[]
 
 export type BookmarkResponse = {
   next: string | null

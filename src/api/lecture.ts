@@ -1,6 +1,7 @@
 import type {
   BookmarkResponse,
   LecturePageResponse,
+  LectureRecommendResponse,
   LecturesParams,
 } from '@/types/lecture'
 import { axiosInstance } from './axios'
@@ -26,13 +27,13 @@ export async function getLecturesApi(
 
 export async function getUserRecommendsLecturesApi(
   params: LecturesParams = {}
-): Promise<LecturePageResponse> {
+): Promise<LectureRecommendResponse> {
   // 객체타입 Record<키값:키밸류>
   const queryParams: Record<string, string | number> = {}
 
   if (params.max_count) queryParams.max_count = params.max_count
 
-  const { data } = await axiosInstance.get<LecturePageResponse>(
+  const { data } = await axiosInstance.get<LectureRecommendResponse>(
     '/v1/lectures/recommends',
     { params: queryParams }
   )
@@ -45,16 +46,16 @@ export async function getBookmark(): Promise<BookmarkResponse> {
   return data
 }
 
-export async function addBookmark(lectureId: number): Promise<string> {
+export async function addBookmark(lecture: number): Promise<string> {
   const { data } = await axiosInstance.post('/v1/lecture-bookmarks', {
-    lecture_id: lectureId,
+    lecture,
   })
   return data.detail
 }
 
-export async function deleteBookmark(lectureId: number): Promise<string> {
+export async function deleteBookmark(lecture_id: number): Promise<string> {
   const { data } = await axiosInstance.delete(
-    `/v1/lecture-bookmarks/${lectureId}`
+    `/v1/lecture-bookmarks/${lecture_id}`
   )
   return data.detail
 }

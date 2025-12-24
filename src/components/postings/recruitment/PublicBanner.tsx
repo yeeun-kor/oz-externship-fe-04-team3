@@ -1,5 +1,5 @@
-import { Bell, LogIn, UserPlus } from 'lucide-react'
 import CardSkeleton from '@/components/common/CardSkeleton'
+import { Bell, LogIn, UserPlus } from 'lucide-react'
 
 export default function PublicBanner() {
   return (

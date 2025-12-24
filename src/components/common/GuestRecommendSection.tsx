@@ -1,3 +1,4 @@
+import { ROUTE_PATHS } from '@/constant/route'
 import { LogIn, UserPlus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { Button } from './Button'
@@ -21,13 +22,16 @@ export default function GuestRecommendSection({
           {description}를 추천해드립니다.
         </p>
         <div className="mt-6 flex items-center justify-center gap-2">
-          <Button variant={'primary'} onClick={() => navigate('/login')}>
+          <Button
+            variant={'primary'}
+            onClick={() => navigate(ROUTE_PATHS.LOGIN)}
+          >
             <LogIn />
             로그인하기
           </Button>
           <Button
             variant={'outline-primary'}
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate(ROUTE_PATHS.SIGNUP)}
           >
             <UserPlus />
             회원가입 하기

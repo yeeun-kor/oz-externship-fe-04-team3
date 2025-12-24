@@ -12,7 +12,7 @@ interface MobileModalProps {
   setIsModalOpen: (value: boolean) => void
 }
 function MobileModal({ setIsModalOpen }: MobileModalProps) {
-  const { user, loginState } = useAuthStore()
+  const { user, loginState, clearAuth } = useAuthStore()
   return (
     <div className="bg-basic-white fixed top-0 left-0 z-10 h-screen w-[263px] pt-4 md:hidden">
       <div className="border-b border-solid border-gray-200">
@@ -74,7 +74,10 @@ function MobileModal({ setIsModalOpen }: MobileModalProps) {
           </button>
           <button className="flex cursor-pointer items-center justify-center gap-[13px] rounded-lg bg-gray-100 px-4 py-2">
             <img src={logoutIcon} alt="logoutIcon" />
-            <span className="text-base font-medium text-gray-700">
+            <span
+              className="text-base font-medium text-gray-700"
+              onClick={() => clearAuth()}
+            >
               로그아웃
             </span>
           </button>
