@@ -1,28 +1,18 @@
 import PublicBanner from '@/components/postings/recruitment/PublicBanner'
 import RecommendedSection from '@/components/postings/recruitment/RecommendedSection'
 import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
-import Modal from '@/components/common/Modal'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
 import { ArrowUp, Plus, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/common/Button'
+import { useAuthStore } from '@/store/userStore'
 
-interface RecruitmentListPageProps {
-  isLoggedIn?: boolean
-  userName?: string
-}
-
-export default function RecruitmentListPage({
-  isLoggedIn = false,
-  userName = '사용자',
-}: RecruitmentListPageProps) {
+export default function RecruitmentListPage() {
   const navigate = useNavigate()
+  const { loginState, user } = useAuthStore()
+  const isLoggedIn = loginState === 'USER'
+
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [pendingRecruitmentId, setPendingRecruitmentId] = useState<
-    number | null
-  >(null)
 
   const {
     searchKeyword,
@@ -46,19 +36,8 @@ export default function RecruitmentListPage({
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-  const handleRecruitmentClick = (id: number) => {
-    if (!isLoggedIn) {
-      setPendingRecruitmentId(id)
-      setShowLoginModal(true)
-    } else {
-      navigate(`/recruitments/${id}`)
-    }
-  }
-
-  const handleLogin = () => {
-    navigate('/login', {
-      state: { from: `/recruitments/${pendingRecruitmentId}` },
-    })
+  const handleRecruitmentClick = (id: string) => {
+    navigate(`/recruitments/${id}`)
   }
 
   const allCategories = [
@@ -84,7 +63,7 @@ export default function RecruitmentListPage({
 
         {isLoggedIn && (
           <RecommendedSection
-            userName={userName}
+            userName={user?.name ?? '사용자'}
             recommended={recommendedRecruitments}
             onClick={handleRecruitmentClick}
           />
@@ -182,28 +161,6 @@ export default function RecruitmentListPage({
           </button>
         )}
       </div>
-
-      <Modal
-        open={showLoginModal}
-        onOpenChange={setShowLoginModal}
-        title="로그인이 필요합니다"
-        description="스터디 공고 상세 내용을 보려면 로그인이 필요합니다."
-        content={
-          <div className="py-4 text-center">
-            <p className="text-gray-600">
-              로그인하고 다양한 스터디를 만나보세요!
-            </p>
-          </div>
-        }
-        footer={{
-          closeButton: { text: '취소' },
-          footerButtons: (
-            <Button variant="primary" onClick={handleLogin}>
-              로그인하러 가기
-            </Button>
-          ),
-        }}
-      />
     </div>
   )
 }

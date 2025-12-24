@@ -1,5 +1,13 @@
-import type { Recruitment } from '@/mocks/recruitmentData'
-import { ArrowLeft, Share2, Bookmark, User, Calendar, Eye } from 'lucide-react'
+import type { Recruitment } from '@/types/recruitment'
+import {
+  ArrowLeft,
+  Share2,
+  Bookmark,
+  Edit,
+  User,
+  Calendar,
+  Eye,
+} from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { showToast } from '@/components/common/toast/Toast'
 import { useState } from 'react'
@@ -76,7 +84,7 @@ export default function DetailHeader({ recruitment, onBack }: Props) {
       <div className="mb-2 flex flex-wrap items-center gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
           <User className="h-4 w-4" />
-          <span>작성자 : {recruitment.author || '익명'}</span>
+          <span>작성자 : {recruitment.author?.name || '익명'}</span>
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -96,7 +104,7 @@ export default function DetailHeader({ recruitment, onBack }: Props) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {tags.map((tag, index) => (
+        {tags.map((tag: string, index: number) => (
           <span
             key={index}
             className="rounded bg-yellow-100 px-3 py-1 text-sm text-yellow-800"

@@ -22,7 +22,7 @@ export const handlers = [
   ...userInformationHandler,
   // 알림 핸들러
   ...notificationHandlers,
-  // 강의목록 핸들러
+  // 강의 목록 핸들러
   ...lectureHandlers,
   // 내 공고 목록 핸들러
   ...myRecruitmentHandlers,
@@ -32,7 +32,7 @@ export const handlers = [
   ...recruitmentCreateHandler,
   // 스터디 그룹 조회 핸들러
   ...studyGroupHandlers,
-  //북마크 핸들러
+  // 북마크 핸들러
   ...bookmarkHandlers,
   // 업로드 presigned URL 핸들러
   ...uploadsHandlers,

@@ -4,7 +4,7 @@ import {
   getRecruitmentDetail,
   incrementRecruitmentViews,
 } from '@/api/recruitments'
-import type { Recruitment } from '@/mocks/recruitmentData'
+import type { Recruitment } from '@/types/recruitment'
 import DetailHeader from '@/components/postings/detail/DetailHeader'
 import DetailInfo from '@/components/postings/detail/DetailInfo'
 import DetailContent from '@/components/postings/detail/DetailContent'
@@ -37,7 +37,7 @@ export default function RecruitmentDetailPage() {
       try {
         const data = await getRecruitmentDetail(id)
         setRecruitment(data)
-        await incrementRecruitmentViews(id)
+        await incrementRecruitmentViews(id).catch(() => {})
       } catch {
         setError('공고를 불러오는데 실패했습니다.')
       } finally {
@@ -48,53 +48,79 @@ export default function RecruitmentDetailPage() {
     fetchDetail()
   }, [id])
 
-  if (id && isNaN(Number(id))) {
+  if (!id) {
     return <Navigate to="/recruitments" replace />
   }
 
   if (isLoading) {
-    return <div className="p-10 text-center">로딩 중</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-600">로딩 중</p>
+      </div>
+    )
   }
 
   if (error || !recruitment) {
-    return <div className="p-10 text-center">{error}</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="text-center">
+          <p className="mb-4 text-xl font-bold text-gray-800">{error}</p>
+          <button
+            onClick={() => navigate('/recruitments')}
+            className="mt-6 rounded-lg bg-yellow-400 px-6 py-2 font-medium text-white hover:bg-yellow-500"
+          >
+            목록으로 돌아가기
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const handleApplySuccess = () => {
     setIsApplicationModalOpen(false)
-    showToast.success('지원 완료', '지원서가 성공적으로 제출되었습니다!')
+    showToast.success('지원 완료', '지원서가 제출되었습니다.')
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl p-4">
         <DetailHeader recruitment={recruitment} onBack={() => navigate(-1)} />
-
         <DetailInfo recruitment={recruitment} />
         <DetailContent recruitment={recruitment} />
-
         <DetailActions
           isAuthor={isAuthor}
           onApply={
-            !isAuthor ? () => setIsApplicationModalOpen(true) : undefined
+            isLoggedIn && !isAuthor
+              ? () => setIsApplicationModalOpen(true)
+              : undefined
+          }
+          onEdit={
+            isAuthor ? () => navigate(`/recruitments/edit/${id}`) : undefined
+          }
+          onDelete={
+            isAuthor
+              ? () => showToast.warning('준비 중', '삭제 기능 준비중')
+              : undefined
           }
           onBookmark={() => {}}
           onShare={() => {}}
         />
       </div>
 
-      <Modal
-        open={isApplicationModalOpen}
-        onOpenChange={setIsApplicationModalOpen}
-        title="스터디 지원서 작성"
-        content={
-          <ApplicationForm
-            recruitmentId={Number(id)}
-            onSuccess={handleApplySuccess}
-            onCancel={() => setIsApplicationModalOpen(false)}
-          />
-        }
-      />
+      {isLoggedIn && !isAuthor && (
+        <Modal
+          open={isApplicationModalOpen}
+          onOpenChange={setIsApplicationModalOpen}
+          title="스터디 지원서 작성"
+          content={
+            <ApplicationForm
+              recruitmentId={id}
+              onSuccess={handleApplySuccess}
+              onCancel={() => setIsApplicationModalOpen(false)}
+            />
+          }
+        />
+      )}
     </div>
   )
 }

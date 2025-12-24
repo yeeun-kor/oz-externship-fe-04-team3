@@ -15,24 +15,24 @@ export interface Lecture {
   link: string
 }
 
-export interface Recruitment {
+export type MockRecruitment = {
   id: number
   title: string
-  author?: string
-  authorId?: number
-  createdAt?: string
-  participants?: number
+  author: { id: number; name: string }
+  createdAt: string
+  participants: number
   maxParticipants: number
   thumbnail: string
-  thumbnailType?: 'image' | 'emoji'
+  thumbnailType: string
   tags: string[]
-  description?: string
+  description: string
+  lectureList: Lecture[]
+  attachments: Attachment[]
   views: number
   bookmarks: number
-  deadline?: string
-  lectureList?: Lecture[]
-  attachments?: Attachment[]
+  deadline: string
   points?: number
+  studyType?: string
 }
 
 export const CATEGORY_MAP: Record<string, string[]> = {
@@ -57,7 +57,7 @@ export const CATEGORY_MAP: Record<string, string[]> = {
 
 export function filterByCategory(
   category: string,
-  recruitments: Recruitment[]
+  recruitments: MockRecruitment[]
 ) {
   if (category === '전체 카테고리') return recruitments
 
@@ -69,11 +69,11 @@ export function filterByCategory(
   )
 }
 
-export const mockRecruitments: Recruitment[] = [
+export const mockRecruitments: MockRecruitment[] = [
   {
     id: 1,
     title: 'Unity 게임 개발 프로젝트 팀원 모집',
-    author: '모집 인원명',
+    author: { id: 1, name: '엄준식' },
     createdAt: '2025.11.28',
     participants: 4,
     maxParticipants: 5,
@@ -136,7 +136,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 2,
     title: '블록체인 & Web3 개발자 팀원 모집',
-    author: '박코딩',
+    author: { id: 2, name: '박코딩' },
     createdAt: '2025.11.27',
     participants: 2,
     maxParticipants: 4,
@@ -186,7 +186,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 3,
     title: 'Spring Boot 백엔드 마스터 스터디',
-    author: '이자바',
+    author: { id: 3, name: '이자바' },
     createdAt: '2025.11.26',
     participants: 3,
     maxParticipants: 6,
@@ -236,7 +236,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 4,
     title: 'React 프론트엔드 스터디',
-    author: '최리액트',
+    author: { id: 4, name: '최리액트' },
     createdAt: '2025.12.01',
     participants: 5,
     maxParticipants: 6,
@@ -286,7 +286,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 5,
     title: '실전 AI 프로젝트 스터디 모집',
-    author: '강인공지능',
+    author: { id: 5, name: '강인공지능' },
     createdAt: '2025.11.30',
     participants: 4,
     maxParticipants: 5,
@@ -336,7 +336,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 6,
     title: '알고리즘 코딩테스트 대비 스터디',
-    author: '조알고리즘',
+    author: { id: 1, name: '엄준식' },
     createdAt: '2025.12.02',
     participants: 6,
     maxParticipants: 8,
@@ -386,7 +386,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 7,
     title: 'UI/UX 디자인 스터디',
-    author: '디자이너김',
+    author: { id: 7, name: '디자이너김' },
     createdAt: '2025.11.30',
     participants: 2,
     maxParticipants: 4,
@@ -436,7 +436,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 8,
     title: '데이터 분석 & 시각화 스터디',
-    author: '데이터박',
+    author: { id: 8, name: '데이터박' },
     createdAt: '2025.12.03',
     participants: 5,
     maxParticipants: 6,
@@ -486,7 +486,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 9,
     title: '라즈베리파이 IoT 프로젝트',
-    author: '하드웨어이',
+    author: { id: 9, name: '하드웨어이' },
     createdAt: '2025.11.29',
     participants: 3,
     maxParticipants: 5,
@@ -536,7 +536,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 10,
     title: '머신러닝 응용 프로젝트',
-    author: 'ML최',
+    author: { id: 10, name: 'ML최' },
     createdAt: '2025.11.22',
     participants: 4,
     maxParticipants: 6,
@@ -586,7 +586,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 11,
     title: 'Vue.js 프론트엔드 마스터',
-    author: '뷰개발자',
+    author: { id: 1, name: '연은식' },
     createdAt: '2025.11.28',
     participants: 3,
     maxParticipants: 5,
@@ -636,7 +636,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 12,
     title: 'Docker & Kubernetes 실전',
-    author: '데브옵스김',
+    author: { id: 12, name: '데브옵스김' },
     createdAt: '2025.12.02',
     participants: 5,
     maxParticipants: 7,
@@ -686,7 +686,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 13,
     title: 'GraphQL API 개발',
-    author: 'API전문가',
+    author: { id: 13, name: 'API전문가' },
     createdAt: '2025.11.26',
     participants: 2,
     maxParticipants: 4,
@@ -736,7 +736,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 14,
     title: 'Next.js SSR/SSG 마스터',
-    author: '넥스트고수',
+    author: { id: 14, name: '넥스트고수' },
     createdAt: '2025.12.02',
     participants: 4,
     maxParticipants: 6,
@@ -786,7 +786,7 @@ export const mockRecruitments: Recruitment[] = [
   {
     id: 15,
     title: 'MongoDB & NoSQL DB',
-    author: '디비마스터',
+    author: { id: 15, name: '디비마스터' },
     createdAt: '2025.11.24',
     participants: 3,
     maxParticipants: 5,

@@ -1,4 +1,4 @@
-import type { Recruitment } from '@/mocks/recruitmentData'
+import type { Recruitment } from '@/types/recruitment'
 import { FileText, Download } from 'lucide-react'
 
 interface Props {
@@ -14,7 +14,7 @@ export default function DetailContent({ recruitment }: Props) {
       <section className="rounded-lg border border-gray-200 bg-white p-6">
         <h3 className="mb-4 text-xl font-bold">공고 내용</h3>
         <div className="whitespace-pre-wrap text-gray-700">
-          {recruitment.description || '상세 내용이 없습니다.'}
+          {recruitment.content || '상세 내용이 없습니다.'}
         </div>
       </section>
 

@@ -11,7 +11,7 @@ import { useAuthStore } from '@/store/userStore'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 function AppRoutes() {
-  const { user, loginState } = useAuthStore()
+  const { loginState } = useAuthStore()
 
   return (
     <Routes>
@@ -20,7 +20,7 @@ function AppRoutes() {
           index
           element={
             loginState === 'USER' ? (
-              <Navigate to="/recruitments/test" replace />
+              <Navigate to="/recruitments" replace />
             ) : (
               <Navigate to="/recruitments" replace />
             )
@@ -29,32 +29,29 @@ function AppRoutes() {
 
         <Route path="/yeeun" element={<YeeunTest />} />
         <Route path="/courses" element={<CoursesPage />} />
-        <Route path="/manage" element={<ManagePage />} />
-        <Route path="/write" element={<WritePage />} />
-        <Route
-          path="/recruitments"
-          element={<RecruitmentListPage isLoggedIn={false} userName="사용자" />}
-        />
 
         <Route
-          path="/recruitments/test"
-          element={
-            <RecruitmentListPage
-              isLoggedIn={loginState === 'USER'}
-              userName={user?.name}
-            />
-          }
-        />
-
-        <Route
-          path="/recruitments/:id"
+          path="/manage"
           element={
             <ProtectedRoute>
-              <RecruitmentDetailPage />
+              <ManagePage />
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<NotFound />}></Route>
+
+        <Route
+          path="/write"
+          element={
+            <ProtectedRoute>
+              <WritePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/recruitments" element={<RecruitmentListPage />} />
+        <Route path="/recruitments/:id" element={<RecruitmentDetailPage />} />
+
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   )

@@ -5,7 +5,7 @@ import {
 } from '@/types/recruitment'
 import { postApplication } from '@/api/recruitments'
 
-export function useApplicationForm(recruitmentId: number) {
+export function useApplicationForm(recruitmentId: string) {
   const [formData, setFormData] = useState<ApplicationFormData>({
     introduction: '',
     motivation: '',
@@ -50,7 +50,11 @@ export function useApplicationForm(recruitmentId: number) {
 
     try {
       setIsSubmitting(true)
-      await postApplication(recruitmentId, formData)
+      await postApplication({
+        recruitmentId,
+        content: JSON.stringify(formData),
+        contact: formData.availableTime,
+      })
       return true
     } finally {
       setIsSubmitting(false)

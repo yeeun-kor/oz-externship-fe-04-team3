@@ -2,7 +2,7 @@ import { useApplicationForm } from '@/hooks/useApplicationForm'
 import { Button } from '@/components/common'
 
 interface ApplicationFormProps {
-  recruitmentId: number
+  recruitmentId: string
   onSuccess?: () => void
   onError?: () => void
   onCancel?: () => void
@@ -131,7 +131,7 @@ export default function ApplicationForm({
       <TextareaWithCounter
         label="구체적인 스터디 경험"
         name="experienceDescription"
-        value={formData.experienceDescription}
+        value={formData.experienceDescription ?? ''}
         onChange={(val) => updateField('experienceDescription', val)}
         placeholder="스터디 경험이 없으시다면 비워두셔도 됩니다."
         maxLength={500}

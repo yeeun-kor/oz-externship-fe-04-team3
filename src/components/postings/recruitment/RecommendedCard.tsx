@@ -1,17 +1,21 @@
 import { Bookmark, Calendar, Eye, User } from 'lucide-react'
-import type { Recruitment } from '@/mocks/recruitmentData'
+import type { Recruitment } from '@/types/recruitment'
 
 interface Props {
   recruitment: Recruitment
-  onClick?: (id: number) => void
+  onClick?: (id: string) => void
 }
 
 export default function RecommendedCard({ recruitment, onClick }: Props) {
   const handleClick = () => {
-    if (onClick) onClick(recruitment.id)
+    onClick?.(recruitment.id)
   }
 
   const lectures = recruitment.lectureList ?? []
+
+  const formattedDeadline = recruitment.deadline
+    ? new Date(recruitment.deadline).toLocaleDateString()
+    : '-'
 
   return (
     <div
@@ -20,7 +24,7 @@ export default function RecommendedCard({ recruitment, onClick }: Props) {
     >
       <div className="h-36 w-full overflow-hidden rounded-t-lg md:h-36">
         <img
-          src={recruitment.thumbnail}
+          src={recruitment.thumbnail || '/images/default-thumbnail.png'}
           alt={recruitment.title}
           className="h-full w-full object-cover"
         />
@@ -49,7 +53,7 @@ export default function RecommendedCard({ recruitment, onClick }: Props) {
 
         <div className="mb-2 flex items-center gap-2 text-xs text-gray-600">
           <Calendar className="h-4 w-4 text-gray-400" />
-          마감일 : {recruitment.deadline}
+          마감일 : {formattedDeadline}
         </div>
 
         {lectures.length > 0 && (
@@ -66,9 +70,9 @@ export default function RecommendedCard({ recruitment, onClick }: Props) {
         )}
 
         <div className="flex flex-wrap gap-2">
-          {recruitment.tags.map((tag, index) => (
+          {recruitment.tags.map((tag) => (
             <span
-              key={index}
+              key={`${recruitment.id}-${tag}`}
               className="rounded bg-yellow-100 px-2 py-1 text-xs text-yellow-800"
             >
               {tag}

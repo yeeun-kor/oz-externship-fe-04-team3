@@ -1,4 +1,4 @@
-import type { Recruitment } from '@/mocks/recruitmentData'
+import type { Recruitment } from '@/types/recruitment'
 import { Users, DollarSign, Calendar, GraduationCap } from 'lucide-react'
 
 interface Props {

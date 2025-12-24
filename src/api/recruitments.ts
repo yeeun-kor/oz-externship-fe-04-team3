@@ -1,49 +1,112 @@
-import { axiosInstance } from '@/api/axios'
+import type {
+  Recruitment,
+  RecruitmentApiItem,
+  RecruitmentApiDetail,
+} from '@/types/recruitment'
+import {
+  mapRecruitmentItem,
+  mapRecruitmentDetail,
+} from '@/mappers/recruitment/mapper'
 
-type RecruitmentParams = {
-  search?: string
-  category?: string
-  sort?: string
+export const getRecruitments = async (): Promise<Recruitment[]> => {
+  const response = await fetch('/api/v1/recruitments')
+
+  if (!response.ok) {
+    throw new Error('공고 목록을 불러오는데 실패했습니다.')
+  }
+
+  const data: RecruitmentApiItem[] = await response.json()
+  return data.map(mapRecruitmentItem)
 }
 
-/** 모집글 목록 조회 */
-export const getRecruitments = async (params: RecruitmentParams) => {
-  const queryParams = new URLSearchParams()
-  if (params.search) queryParams.append('search', params.search)
-  if (params.category) queryParams.append('category', params.category)
-  if (params.sort) queryParams.append('sort', params.sort)
+export const getRecruitmentDetail = async (
+  id: string
+): Promise<Recruitment> => {
+  const response = await fetch(`/api/v1/recruitments/${id}`)
 
-  const res = await axiosInstance.get(
-    `/v1/recruitments?${queryParams.toString()}`
-  )
-  return res.data
+  if (!response.ok) {
+    throw new Error('공고를 불러오는데 실패했습니다.')
+  }
+
+  const data: RecruitmentApiDetail = await response.json()
+  return mapRecruitmentDetail(data)
 }
 
-export const getRecruitmentDetail = async (id: string) => {
-  const res = await axiosInstance.get(`/v1/recruitments/${id}`)
-  return res.data
+export const incrementRecruitmentViews = async (id: string): Promise<void> => {
+  const response = await fetch(`/api/v1/recruitments/${id}/views`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error('조회수 증가에 실패했습니다.')
+  }
 }
 
-export const incrementRecruitmentViews = async (id: string) => {
-  await axiosInstance.post(`/v1/recruitments/${id}/views`)
+export const createRecruitment = async (
+  data: Partial<Recruitment>
+): Promise<Recruitment> => {
+  const response = await fetch('/api/v1/recruitments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error('공고 작성에 실패했습니다.')
+  }
+
+  return response.json()
 }
 
-export interface ApplicationFormData {
-  introduction: string
-  motivation: string
-  goal: string
-  availableTime: string
-  hasExperience: boolean
-  experienceDescription: string
+export const updateRecruitment = async (
+  id: string,
+  data: Partial<Recruitment>
+): Promise<Recruitment> => {
+  const response = await fetch(`/api/v1/recruitments/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error('공고 수정에 실패했습니다.')
+  }
+
+  return response.json()
 }
 
-export const postApplication = async (
-  recruitmentId: number,
-  data: ApplicationFormData
-) => {
-  const res = await axiosInstance.post(
-    `/v1/recruitments/${recruitmentId}/apply`,
-    data
-  )
-  return res.data
+export const deleteRecruitment = async (id: string): Promise<void> => {
+  const response = await fetch(`/api/v1/recruitments/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error('공고 삭제에 실패했습니다.')
+  }
+}
+
+export interface ApplicationData {
+  recruitmentId: string
+  content: string
+  contact?: string
+}
+
+export const postApplication = async (data: ApplicationData): Promise<void> => {
+  const response = await fetch('/api/v1/applications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error('지원서 제출에 실패했습니다.')
+  }
+
+  return response.json()
 }
