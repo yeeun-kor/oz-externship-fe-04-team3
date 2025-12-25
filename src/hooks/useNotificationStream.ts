@@ -8,6 +8,10 @@ import {
 } from '@/mappers/notification/mapper'
 import { useAuthStore } from '@/store/userStore'
 
+type StreamMessage =
+  | (NotificationApiItem & { id: number | string })
+  | { type: 'connected'; id?: undefined }
+
 type UseNotificationStreamOptions = {
   onMessage?: (data: ReturnType<typeof alarmMapper>) => void
   onUnauthorized?: () => void
@@ -36,8 +40,16 @@ export function useNotificationStream(options?: UseNotificationStreamOptions) {
 
     es.onmessage = (event: MessageEvent) => {
       try {
-        const raw = JSON.parse(event.data) as NotificationApiItem
+        const raw = JSON.parse(event.data) as StreamMessage
+        const msgType = (raw as StreamMessage)['type']
+        // keepalive/connected 이벤트는 무시
+        if (!raw.id || msgType === 'connected') {
+          return
+        }
         const alarm = alarmMapper(raw)
+        // 새 알림 로그로 식별 가능하게 기록
+        // eslint-disable-next-line no-console
+        console.log('[SSE] new notification', raw)
         // 새 알림을 캐시에 바로 반영해 추가 페칭을 줄입니다.
         const filters: Array<'all' | 'unread' | 'read'> = [
           'all',
@@ -51,6 +63,8 @@ export function useNotificationStream(options?: UseNotificationStreamOptions) {
             next: string | null
             previous: string | null
             results: ReturnType<typeof alarmMapper>[]
+            total?: number
+            unread_total?: number
           }
           queryClient.setQueryData<InfiniteData<CursorPage>>(
             ['notifications', filterKey],
@@ -62,8 +76,16 @@ export function useNotificationStream(options?: UseNotificationStreamOptions) {
               )
               if (exists) return prev
               const [firstPage, ...rest] = prev.pages
+              const isUnread = !alarm.isRead
+              const nextTotal = (firstPage.total ?? 0) + 1
+              const nextUnread =
+                filterKey !== 'read' && isUnread
+                  ? (firstPage.unread_total ?? 0) + 1
+                  : firstPage.unread_total
               const updatedFirstPage = {
                 ...firstPage,
+                total: nextTotal,
+                unread_total: nextUnread,
                 results: [alarm, ...firstPage.results],
               }
               return {
@@ -72,13 +94,6 @@ export function useNotificationStream(options?: UseNotificationStreamOptions) {
               }
             }
           )
-        })
-        // 카운트 쿼리도 무효화하여 상단 카운트 반영
-        queryClient.invalidateQueries({
-          queryKey: ['notifications-total-count'],
-        })
-        queryClient.invalidateQueries({
-          queryKey: ['notifications-unread-count'],
         })
         optionsRef.current?.onMessage?.(alarm)
       } catch (e) {

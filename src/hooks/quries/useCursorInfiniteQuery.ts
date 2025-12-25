@@ -4,6 +4,8 @@ type CursorPage<T> = {
   next: string | null
   previous: string | null
   results: T[]
+  total?: number
+  unread_total?: number
 }
 
 type UseCursorInfiniteQueryParams<T> = {

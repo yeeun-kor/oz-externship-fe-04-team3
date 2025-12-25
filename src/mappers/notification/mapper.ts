@@ -22,13 +22,14 @@ export type NotificationListResponse = {
   results: NotificationApiItem[]
   next: string | null
   previous: string | null
-  total_count?: number
-  unread_count?: number
+  total?: number
+  unread_total?: number
 }
 
 // ISO 날짜 문자열을 "12월 1일" 형태로 포맷
 const formatDate = (isoString: string) => {
   const date = new Date(isoString)
+  if (Number.isNaN(date.getTime())) return ''
   const month = date.getMonth() + 1
   const day = date.getDate()
   return `${month}월 ${day}일`
@@ -63,12 +64,12 @@ export const alarmMapper = (item: NotificationApiItem): AlarmItem => {
   const iconType = typeToIcon[item.type as keyof typeof typeToIcon] ?? 'apply'
 
   return {
-    id: String(item.id),
-    message: item.content,
-    date: formatDate(item.created_at),
-    isRead: item.is_read,
+    id: String(item.id ?? crypto.randomUUID()),
+    message: item.content ?? '',
+    date: formatDate(item.created_at ?? ''),
+    isRead: !!item.is_read,
     accent,
     iconType,
-    backUrl: item.back_url_link,
+    backUrl: item.back_url_link ?? '',
   }
 }
