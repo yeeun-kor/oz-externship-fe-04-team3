@@ -1,6 +1,7 @@
 import ManageCard from './ManageCard'
 import ManageCardSkeleton from './ManageCardSkeleton'
 import type { ManageRecruitment } from '@/types/myRecruitment'
+import NoData from '@/components/notFound/NoData'
 
 type ManageListProps = {
   postings: ManageRecruitment[]
@@ -22,11 +23,7 @@ export default function ManageList({
   }
 
   if (postings.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
-        등록된 공고가 없습니다.
-      </div>
-    )
+    return <NoData className="max-w-full" />
   }
 
   return (
