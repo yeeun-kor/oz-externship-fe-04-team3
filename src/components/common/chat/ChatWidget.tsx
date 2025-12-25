@@ -8,6 +8,7 @@ import { MessageCircle, X } from 'lucide-react'
 import { ChatBadge } from './common'
 import { ChatListPanel } from './list'
 import { ChatRoomPanel } from './room'
+import '@/team2.css'
 
 export function ChatWidget() {
   const {

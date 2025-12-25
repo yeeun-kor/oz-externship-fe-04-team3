@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-pretendard: Pretendard, sans-serif;
+
+  --breakpoint-xs: 420px;
+
+  --color-primary-50: #fefce8;
+  --color-primary-100: #fef9c3;
+  --color-primary-200: #fef08a;
+  --color-primary-300: #fde047;
+  --color-primary-400: #facc15;
+  --color-primary-500: #eab308;
+  --color-primary-600: #ca8a04;
+  --color-primary-700: #a16207;
+  --color-primary-800: #854d0e;
+  --color-primary-900: #713f12;
+
+  --color-custom-gray-50: #f9fafb;
+  --color-custom-gray-100: #f3f4f6;
+  --color-custom-gray-200: #e5e7eb;
+  --color-custom-gray-300: #d1d5db;
+  --color-custom-gray-400: #9ca3af;
+  --color-custom-gray-500: #6b7280;
+  --color-custom-gray-600: #4b5563;
+  --color-custom-gray-700: #374151;
+  --color-custom-gray-800: #1f2937;
+  --color-custom-gray-900: #111827;
+
+  --color-success-100: #dcfce7;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-800: #166534;
+
+  --color-danger-100: #fca5a5;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-800: #991b1b;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-pretendard);
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+
+  h3 {
+    @apply text-2xl font-medium;
+  }
+}
+
+@layer components {
+  .centralize {
+    @apply flex items-center justify-center;
+  }
+
+  .modal {
+    @apply rounded-lg bg-white p-6 shadow-lg transition-all;
+    width: 90%;
+
+    &.modal-wrapper {
+      @apply overflow-auto p-10;
+    }
+  }
+
+  .container-1280 {
+    @apply w-full max-w-[1280px] min-w-[360px];
+  }
+
+  .remove-focus-outline {
+    @apply focus:ring-0 focus:outline-none;
+  }
+
+  .markdown-content ol {
+    @apply ml-4 list-decimal;
+  }
+
+  .markdown-content ul {
+    @apply ml-4 list-disc;
+  }
+}
+
+:root {
+  --toastify-color-light: transparent;
+  --toastify-color-progress-success: #22c55e;
+  --toastify-color-progress-warning: #facc15;
+  --toastify-color-progress-error: #dc2626;
+}
+
+.Toastify__toast {
+  @apply relative mb-4 flex min-h-0 cursor-pointer justify-between overflow-hidden rounded-lg bg-transparent p-0 shadow-none;
+}
+
+.Toastify__toast-body {
+  @apply m-0 p-0;
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
