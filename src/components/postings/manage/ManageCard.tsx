@@ -14,7 +14,7 @@ import { showToast } from '@/components/common/toast/Toast'
 import ManageApplicantsModal from './ManageApplicantsModal'
 import { useApplicants } from '@/hooks/quries/useApplicants'
 import { useApplicantDetail } from '@/hooks/quries/useApplicantDetail'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { approveApplication, rejectApplication } from '@/api/applications'
 
 type ManageCardProps = {
@@ -90,6 +90,7 @@ export default function ManageCard({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const applicantsQuery = useApplicants(posting.uuid, 10, isModalOpen)
   const applicantList =
     applicantsQuery.data?.pages.flatMap((page) => page.results) ?? []
@@ -138,6 +139,13 @@ export default function ManageCard({
     try {
       await deleteMyRecruitment(posting.uuid)
       showToast.success('삭제 완료', '공고가 삭제되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['manageRecruitmentList'] })
+      queryClient.invalidateQueries({
+        queryKey: ['manageRecruitmentList-open-count'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['manageRecruitmentList-closed-count'],
+      })
       setIsDeleteModalOpen(false)
       onDeleted?.()
     } catch (err) {

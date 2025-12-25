@@ -211,9 +211,23 @@ export function useWriteRecruitmentForm(
         queryClient.invalidateQueries({
           queryKey: ['my-recruitment-detail', recruitmentId],
         })
+        queryClient.invalidateQueries({ queryKey: ['manageRecruitmentList'] })
+        queryClient.invalidateQueries({
+          queryKey: ['manageRecruitmentList-open-count'],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['manageRecruitmentList-closed-count'],
+        })
         showToast.success('공고 수정', '공고가 수정되었습니다.')
       } else {
         await axiosInstance.post('/v1/recruitments', parsed.data)
+        queryClient.invalidateQueries({ queryKey: ['manageRecruitmentList'] })
+        queryClient.invalidateQueries({
+          queryKey: ['manageRecruitmentList-open-count'],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['manageRecruitmentList-closed-count'],
+        })
         showToast.success('공고 등록', '공고가 등록되었습니다.')
       }
       navigate('/manage')
