@@ -1,5 +1,5 @@
 import { Bookmark, Calendar, Eye, Pencil, Trash2, Users } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { Button, Modal } from '@/components/common'
@@ -8,14 +8,20 @@ import { Skeleton } from '@/components/common/skeleton'
 import { getTypeIcon } from '@/helpers/icons'
 import type { ManageRecruitment } from '@/types/myRecruitment'
 import ApplicantDetailModal from './ApplicantDetailModal'
-import type { Applicant, ApplicantDetail } from './applicantTypes'
+import type { ApplicantDetail } from './applicantTypes'
 import { deleteMyRecruitment } from '@/api/myRecruitment'
 import { showToast } from '@/components/common/toast/Toast'
 import ManageApplicantsModal from './ManageApplicantsModal'
+import { useApplicants } from '@/hooks/quries/useApplicants'
+import { useApplicantDetail } from '@/hooks/quries/useApplicantDetail'
+import { useMutation } from '@tanstack/react-query'
+import { approveApplication, rejectApplication } from '@/api/applications'
 
 type ManageCardProps = {
   posting: ManageRecruitment
   onDeleted?: () => void
+  autoOpen?: boolean
+  onAutoOpenConsumed?: () => void
 }
 
 type DeleteModalProps = {
@@ -70,7 +76,12 @@ function ConfirmDeleteModal({
   )
 }
 
-export default function ManageCard({ posting, onDeleted }: ManageCardProps) {
+export default function ManageCard({
+  posting,
+  onDeleted,
+  autoOpen = false,
+  onAutoOpenConsumed,
+}: ManageCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
@@ -79,75 +90,48 @@ export default function ManageCard({ posting, onDeleted }: ManageCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const navigate = useNavigate()
-  // TODO: api 연동 필요
-  const mockApplicants: Applicant[] = [
-    {
-      id: '1',
-      name: '김지원',
-      gender: '여성',
-      status: 'PENDING' as const,
-      appliedAt: '2024-11-25 14:30',
-      availableTime:
-        '평일 저녁 7-10시, 주말 오후 시간대 참여 가능합니다. 평일 저녁 7-10시, 주말 오후 시간대 참여 가능합니다. 평일 저녁 7-10시, 주말 오후 시간대 참여 가능합니다.',
-      hasExperience: false,
-      thumbnail: '',
+  const applicantsQuery = useApplicants(posting.uuid, 10, isModalOpen)
+  const applicantList =
+    applicantsQuery.data?.pages.flatMap((page) => page.results) ?? []
+  const totalApplicants = applicantList.length
+  const detailQuery = useApplicantDetail(selectedApplicantId ?? undefined)
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => approveApplication(id),
+    onSuccess: () => {
+      showToast.success('승인 완료', '지원이 승인되었습니다.')
+      applicantsQuery.refetch()
+      detailQuery.refetch()
     },
-    {
-      id: '2',
-      name: '박개발',
-      gender: '남성',
-      status: 'ACCEPTED' as const,
-      appliedAt: '2024-11-24 10:10',
-      availableTime: '주말 오전/오후, 평일 9시 이후 가능',
-      hasExperience: true,
-      thumbnail: '',
+    onError: (err) => {
+      showToast.error('승인 실패', (err as Error)?.message ?? '')
     },
-    {
-      id: '3',
-      name: '최코딩',
-      gender: '여성',
-      status: 'REJECTED' as const,
-      appliedAt: '2024-11-23 20:45',
-      availableTime: '평일 오후 6-8시',
-      hasExperience: true,
-      thumbnail: '',
-    },
-    {
-      id: '4',
-      name: '이프론트',
-      gender: '남성',
-      status: 'PENDING' as const,
-      appliedAt: '2024-11-22 09:20',
-      availableTime: '주중 8-10시, 주말 오후',
-      hasExperience: false,
-      thumbnail: '',
-    },
-    {
-      id: '5',
-      name: '이프론트',
-      gender: '남성',
-      status: 'CANCELED' as const,
-      appliedAt: '2024-11-22 09:20',
-      availableTime: '주중 8-10시, 주말 오후',
-      hasExperience: false,
-      thumbnail: '',
-    },
-  ]
+  })
 
-  const applicantDetails: ApplicantDetail[] = mockApplicants.map(
-    (applicant) => ({
-      ...applicant,
-      selfIntro: '안녕하세요, 백엔드 개발자로 성장하고 싶은 지원자입니다.',
-      motivation:
-        'Node.js 실무 경험을 쌓고 협업 역량을 키우기 위해 지원했습니다.',
-      goal: '스터디를 통해 프로젝트 완성도를 높이고 코드 리뷰를 통해 성장하고 싶습니다.',
-      experienceDetail:
-        '이전에 소규모 스터디에 참여한 경험이 있으며, 주로 서버 API 개발을 맡았습니다.',
-    })
-  )
+  const rejectMutation = useMutation({
+    mutationFn: (id: number) => rejectApplication(id),
+    onSuccess: () => {
+      showToast.success('거절 완료', '지원이 거절되었습니다.')
+      applicantsQuery.refetch()
+      detailQuery.refetch()
+    },
+    onError: (err) => {
+      showToast.error('거절 실패', (err as Error)?.message ?? '')
+    },
+  })
 
-  const selectedApplicant =
-    applicantDetails.find((a) => a.id === selectedApplicantId) ?? null
+  const handleLoadMore = async () => {
+    if (applicantsQuery.hasNextPage && !applicantsQuery.isFetchingNextPage) {
+      await applicantsQuery.fetchNextPage()
+    }
+  }
+
+  useEffect(() => {
+    if (!autoOpen || isModalOpen) return
+    setIsModalOpen(true)
+    onAutoOpenConsumed?.()
+  }, [autoOpen, isModalOpen, onAutoOpenConsumed])
+
+  const selectedApplicant: ApplicantDetail | null = detailQuery.data ?? null
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -260,8 +244,12 @@ export default function ManageCard({ posting, onDeleted }: ManageCardProps) {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         recruitmentTitle={posting.title}
-        totalCount={mockApplicants.length}
-        applicants={mockApplicants}
+        totalCount={totalApplicants}
+        applicants={applicantList}
+        isLoading={applicantsQuery.isLoading}
+        isFetchingNext={applicantsQuery.isFetchingNextPage}
+        hasNextPage={applicantsQuery.hasNextPage}
+        onLoadMore={handleLoadMore}
         onApplicantClick={(id) => setSelectedApplicantId(id)}
       />
       <ApplicantDetailModal
@@ -270,6 +258,18 @@ export default function ManageCard({ posting, onDeleted }: ManageCardProps) {
           setSelectedApplicantId(open ? selectedApplicantId : null)
         }
         applicant={selectedApplicant}
+        isLoading={detailQuery.isLoading}
+        onApprove={
+          selectedApplicantId
+            ? () => approveMutation.mutate(Number(selectedApplicantId))
+            : undefined
+        }
+        onReject={
+          selectedApplicantId
+            ? () => rejectMutation.mutate(Number(selectedApplicantId))
+            : undefined
+        }
+        isActionLoading={approveMutation.isPending || rejectMutation.isPending}
       />
       <ConfirmDeleteModal
         open={isDeleteModalOpen}

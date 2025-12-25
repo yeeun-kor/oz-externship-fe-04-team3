@@ -18,6 +18,8 @@ type ApplicantDetailModalProps = {
   applicant: ApplicantDetail | null
   onApprove?: (id: string) => void
   onReject?: (id: string) => void
+  isLoading?: boolean
+  isActionLoading?: boolean
 }
 
 export default function ApplicantDetailModal({
@@ -26,10 +28,12 @@ export default function ApplicantDetailModal({
   applicant,
   onApprove,
   onReject,
+  isLoading,
+  isActionLoading,
 }: ApplicantDetailModalProps) {
-  if (!applicant) return null
+  if (!applicant && !isLoading) return null
 
-  const showFooter = applicant.status === 'PENDING'
+  const showFooter = applicant?.status === 'PENDING'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,7 +64,7 @@ export default function ApplicantDetailModal({
             </h4>
             <div className="flex items-center gap-3">
               <div className="h-14 w-14 overflow-hidden rounded-full bg-gray-100">
-                {applicant.thumbnail ? (
+                {applicant?.thumbnail ? (
                   <img
                     src={applicant.thumbnail}
                     alt={applicant.name}
@@ -72,10 +76,10 @@ export default function ApplicantDetailModal({
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-base font-semibold">
-                  {applicant.name}
+                  {applicant?.name ?? '로딩 중'}
                 </span>
                 <span className="text-sm text-gray-600">
-                  {applicant.gender}
+                  {applicant?.gender ?? ''}
                 </span>
               </div>
             </div>
@@ -85,31 +89,44 @@ export default function ApplicantDetailModal({
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-1 text-sm text-gray-700">
                 <span className="text-gray-500">지원 상태</span>
-                <Badge variant={applicantStatusColor[applicant.status]}>
-                  {applicantStatusLabel[applicant.status]}
+                <Badge
+                  variant={
+                    applicant
+                      ? applicantStatusColor[applicant.status]
+                      : 'default'
+                  }
+                >
+                  {applicant ? applicantStatusLabel[applicant.status] : '...'}
                 </Badge>
               </div>
               <div className="flex flex-col items-end gap-1 text-sm text-gray-700">
                 <span className="text-gray-500">지원 일시</span>
-                <span>{applicant.appliedAt}</span>
+                <span>{applicant?.appliedAt ?? '...'}</span>
               </div>
             </div>
           </div>
 
-          <Section title="자기소개" content={applicant.selfIntro} />
-          <Section title="지원동기" content={applicant.motivation} />
-          <Section title="스터디 목표" content={applicant.goal} />
-          <Section title="가능한 시간대" content={applicant.availableTime} />
+          <Section title="자기소개" content={applicant?.selfIntro ?? '...'} />
+          <Section title="지원동기" content={applicant?.motivation ?? '...'} />
+          <Section title="스터디 목표" content={applicant?.goal ?? '...'} />
+          <Section
+            title="가능한 시간대"
+            content={applicant?.availableTime ?? '...'}
+          />
           <div>
             <h5 className="mb-2 text-sm font-semibold text-gray-700">
               스터디 경험
             </h5>
             <div className="flex flex-col gap-2 rounded-lg bg-gray-50 p-4">
-              <Badge variant={applicant.hasExperience ? 'success' : 'danger'}>
-                {applicant.hasExperience ? '경험 있음' : '경험 없음'}
+              <Badge variant={applicant?.hasExperience ? 'success' : 'danger'}>
+                {applicant
+                  ? applicant.hasExperience
+                    ? '경험 있음'
+                    : '경험 없음'
+                  : '...'}
               </Badge>
               <p className="text-sm whitespace-pre-line text-gray-700">
-                {applicant.experienceDetail}
+                {applicant?.experienceDetail ?? '...'}
               </p>
             </div>
           </div>
@@ -120,18 +137,20 @@ export default function ApplicantDetailModal({
             <Button
               variant="danger"
               className="w-[84px]"
-              onClick={() => onReject?.(applicant.id)}
+              onClick={() => applicant && onReject?.(applicant.id)}
+              disabled={isActionLoading}
             >
               {getTypeIcon('rejected')}
-              거절
+              {isActionLoading ? '처리 중' : '거절'}
             </Button>
             <Button
               variant="success"
               className="w-[84px]"
-              onClick={() => onApprove?.(applicant.id)}
+              onClick={() => applicant && onApprove?.(applicant.id)}
+              disabled={isActionLoading}
             >
               {getTypeIcon('approved')}
-              승인
+              {isActionLoading ? '처리 중' : '승인'}
             </Button>
           </DialogFooter>
         )}

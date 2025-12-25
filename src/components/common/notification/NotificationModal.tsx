@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useAnimation } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 import {
   useNotificationActions,
@@ -24,6 +25,7 @@ export default function NotificationModal({
   onClose,
   onAnimationComplete,
 }: NotificationModalProps) {
+  const navigate = useNavigate()
   const SCROLL_THRESHOLD = 80
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'read'>(
     'all'
@@ -98,13 +100,18 @@ export default function NotificationModal({
           return
         }
 
+        const urlObj = new URL(alarm.backUrl, window.location.origin)
         const backendHost = new URL(API_BASE_URL).host
-        const targetHost = new URL(alarm.backUrl).host
-        const shouldNewTab = backendHost !== targetHost
-        if (shouldNewTab) {
-          window.open(alarm.backUrl, '_blank', 'noopener,noreferrer')
+        const targetHost = urlObj.host
+        const isSameOrigin = urlObj.origin === window.location.origin
+        const shouldNewTab = !isSameOrigin && backendHost !== targetHost
+
+        if (isSameOrigin) {
+          navigate(urlObj.pathname + urlObj.search + urlObj.hash)
+        } else if (shouldNewTab) {
+          window.open(urlObj.toString(), '_blank', 'noopener,noreferrer')
         } else {
-          window.location.href = alarm.backUrl
+          window.location.href = urlObj.toString()
         }
       })
       .catch(() => {
