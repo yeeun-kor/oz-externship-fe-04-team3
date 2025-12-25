@@ -5,6 +5,7 @@ import { getUserInformationApi } from './api/userInformation'
 import { useAuthStore } from './store/userStore'
 
 function App() {
+  /* 리프레쉬토큰 */
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -26,6 +27,7 @@ function App() {
     }
     initAuth()
   }, [])
+
   return (
     <>
       <AppRoutes />

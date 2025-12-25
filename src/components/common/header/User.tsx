@@ -1,6 +1,5 @@
 import notificationIcon from '@/assets/icons/notification.svg'
 import topArrow from '@/assets/icons/topArrow.svg'
-import defaultImg from '@/assets/images/defaultProfileImg.svg'
 import useIsDesktop from '@/hooks/useIsDesktop'
 
 import { AnimatePresence } from 'framer-motion'
@@ -8,6 +7,7 @@ import { useState } from 'react'
 
 import { ROUTE_PATHS } from '@/constant/route'
 import { useAuthStore } from '@/store/userStore'
+import { useNavigate } from 'react-router'
 import NotificationModal from '../notification/NotificationModal'
 import UserModal from './UserModal'
 function User() {
@@ -15,6 +15,7 @@ function User() {
   const [isAlarmOpen, setIsAlarmOpen] = useState(false)
   const [isAlarmAnimating, setIsAlarmAnimating] = useState(false)
   const isDesktop = useIsDesktop()
+  const navigate = useNavigate()
   // 로그인했을때의 모달 상태 관리
   const handleUserModal = () => {
     setIsUserModalOpen((prev) => !prev)
@@ -34,21 +35,24 @@ function User() {
     <div className="ml-auto flex">
       <div className="flex items-center gap-8 text-base text-gray-700">
         <div className="hidden md:flex md:gap-8">
-          <a href="/courses" className="hover:text-primary-600 cursor-pointer">
+          <span
+            onClick={() => navigate('/courses')}
+            className="hover:text-primary-600 cursor-pointer"
+          >
             강의 목록
-          </a>
+          </span>
           <a
             href={ROUTE_PATHS.STUDY}
             className="hover:text-primary-600 cursor-pointer"
           >
             스터디 그룹
           </a>
-          <a
-            href="/recruitments"
+          <span
+            onClick={() => navigate('/recruitments')}
             className="hover:text-primary-600 cursor-pointer"
           >
             구인 공고
-          </a>
+          </span>
         </div>
         <div className="relative">
           <img
@@ -92,7 +96,7 @@ function User() {
       >
         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#FEF9C3]">
           <img
-            src={user?.profile_img_url ? user.profile_img_url : defaultImg}
+            src={user?.profile_img_url}
             alt="profileIcon"
             className="h-full w-full object-cover"
           />

@@ -1,4 +1,4 @@
-import { getLecturesApi } from '@/api/lecture'
+import { getLecturesApi, getUserRecommendsLecturesApi } from '@/api/lecture'
 import { Select } from '@/components/common'
 import GuestRecommendSection from '@/components/common/GuestRecommendSection'
 import Loading from '@/components/common/Loading'
@@ -11,6 +11,7 @@ import useDebounce from '@/hooks/useDebounce'
 import { categoryData, sortData } from '@/mappers/lectures/lecture'
 import { useAuthStore } from '@/store/userStore'
 import type { LecturesParams } from '@/types/lecture'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowDownWideNarrow, Folder, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useInView } from 'react-intersection-observer'
@@ -25,19 +26,33 @@ export default function Courses() {
   //useDebounce 적용
   const debouncedInputValue = useDebounce(inputValue)
   //무한쿼리 불러오기
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteScroll({
-      queryKey: ['lectures', debouncedInputValue, category, sort],
-      queryFn: (page) =>
-        getLecturesApi({
-          page,
-          search: debouncedInputValue,
-          category, // 이미 undefined면 그대로
-          sort,
-        }),
-    })
+  const {
+    data: lectureData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: lectureLoading,
+  } = useInfiniteScroll({
+    queryKey: ['lectures', debouncedInputValue, category, sort],
+    queryFn: (page) =>
+      getLecturesApi({
+        page,
+        search: debouncedInputValue,
+        category, // 이미 undefined면 그대로
+        sort,
+      }),
+  })
+
+  // 추천 강의 불러오기
+  const { data, isLoading } = useQuery({
+    queryKey: ['lecture-recommend'],
+    queryFn: () => getUserRecommendsLecturesApi(),
+  })
+
   // 검색어 결과값 있는지 확인
-  const hasNoResult = data?.pages.every((page) => page.results.length === 0)
+  const hasNoResult = lectureData?.pages.every(
+    (page) => page.results.length === 0
+  )
   //무한스크롤
   const { ref } = useInView({
     threshold: 0,
@@ -62,7 +77,7 @@ export default function Courses() {
           </p>
         </div>
         {loginState === 'USER' ? (
-          <LectureRecommendSection />
+          <LectureRecommendSection data={data} isLoading={isLoading} />
         ) : (
           <GuestRecommendSection
             title="강의를"
@@ -106,7 +121,7 @@ export default function Courses() {
           }}
         />
       </section>
-      {isLoading ? (
+      {lectureLoading ? (
         <Loading />
       ) : (
         <section className="courses_cardlist">
@@ -114,7 +129,7 @@ export default function Courses() {
           {hasNoResult ? (
             <NoSearchResult searchResult={debouncedInputValue} />
           ) : (
-            <LectureList data={data} />
+            <LectureList data={lectureData} />
           )}
         </section>
       )}

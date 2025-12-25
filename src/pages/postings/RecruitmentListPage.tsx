@@ -1,11 +1,13 @@
+import { getUserRecommendsLecturesApi } from '@/api/lecture'
 import PublicBanner from '@/components/postings/recruitment/PublicBanner'
 import RecommendedSection from '@/components/postings/recruitment/RecommendedSection'
 import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
+import { useAuthStore } from '@/store/userStore'
+import { QueryClient } from '@tanstack/react-query'
 import { ArrowUp, Plus, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/userStore'
 
 export default function RecruitmentListPage() {
   const navigate = useNavigate()
@@ -39,6 +41,18 @@ export default function RecruitmentListPage() {
   const handleRecruitmentClick = (id: string) => {
     navigate(`/recruitments/${id}`)
   }
+
+  /* 데이터 프리페칭 */
+  const queryClient = new QueryClient()
+  useEffect(() => {
+    const prefetchData = async () => {
+      await queryClient.prefetchQuery({
+        queryKey: ['lecture-recommend'], //프레페칭 키와 함수 적용
+        queryFn: () => getUserRecommendsLecturesApi(),
+      })
+    }
+    prefetchData()
+  }, [])
 
   const allCategories = [
     'AI/인공지능',

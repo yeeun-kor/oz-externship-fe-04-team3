@@ -10,17 +10,21 @@ export const sortData: SelectData = [
   { itemValue: 'low_rating', itemText: '낮은 평점순' },
 ]
 export const categoryData: SelectData = [
-  { itemValue: 'default', itemText: '정렬 기본순' },
-  { itemValue: 'artificial-intelligence', itemText: 'AI/인공지능' },
-  { itemValue: 'Applied-ai', itemText: '응용 AI' },
-  { itemValue: 'it-programming', itemText: 'IT/프로그래밍' },
-  { itemValue: 'game-dev-all', itemText: '게임 개발' },
-  { itemValue: 'data-science', itemText: '데이터 사이언스' },
-  { itemValue: 'it', itemText: 'IT' },
-  { itemValue: 'hardware', itemText: '하드웨어' },
-  { itemValue: 'design', itemText: '디자인' },
+  { itemValue: 'default', itemText: '전체' },
+  { itemValue: '개발 · 프로그래밍', itemText: '개발 · 프로그래밍' },
+  { itemValue: 'AI 기술', itemText: 'AI 기술' },
+  { itemValue: 'AI 활용(AX)', itemText: 'AI 활용(AX)' },
+  { itemValue: '게임 개발', itemText: '게임 개발' },
+  { itemValue: '데이터 사이언스', itemText: '데이터 사이언스' },
+  { itemValue: '보안 · 네트워크', itemText: '보안 · 네트워크' },
+  { itemValue: '하드웨어', itemText: '하드웨어' },
+  { itemValue: '디자인 · 아트', itemText: '디자인 · 아트' },
+  { itemValue: '기획 · 경영 · 마케팅', itemText: '기획 · 경영 · 마케팅' },
+  { itemValue: '외국어', itemText: '외국어' },
+  { itemValue: '업무 생산성', itemText: '업무 생산성' },
+  { itemValue: '커리어 · 자기계발', itemText: '커리어 · 자기계발' },
+  { itemValue: '대학 교육', itemText: '대학 교육' },
 ]
-
 export const LectureLevel: Record<string, string> = {
   EASY: '초급',
   NORMAL: '중급',

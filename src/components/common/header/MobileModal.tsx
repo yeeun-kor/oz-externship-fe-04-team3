@@ -2,9 +2,8 @@ import announcement from '@/assets/icons/announcement.svg'
 import classIcon from '@/assets/icons/class.svg'
 import close from '@/assets/icons/close.svg'
 import logoutIcon from '@/assets/icons/logout.svg'
-import profileImage from '@/assets/icons/profileImg.svg'
+import profileImg from '@/assets/icons/profileImg.svg'
 import study from '@/assets/icons/study.svg'
-import defaultProfileImg from '@/assets/images/defaultProfileImg.svg'
 import logo from '@/assets/images/logo.svg'
 import { ROUTE_PATHS } from '@/constant/route'
 import { useAuthStore } from '@/store/userStore'
@@ -48,8 +47,8 @@ function MobileModal({ setIsModalOpen }: MobileModalProps) {
         <div className="absolute bottom-[70px] flex h-[117px] w-full flex-col gap-3 border-t border-solid border-gray-200 p-4">
           <div className="flex items-center gap-3">
             <img
-              src={defaultProfileImg}
-              alt="defaultProfileImg"
+              src={user?.profile_img_url}
+              alt="ProfileImg"
               className="h-[60px] w-[60px] rounded-full"
             />
             {/* 추후 api 연동으로 이미지 불러오게 */}
@@ -64,7 +63,7 @@ function MobileModal({ setIsModalOpen }: MobileModalProps) {
             </div>
           </div>
           <button className="flex cursor-pointer items-center justify-center gap-[13px] rounded-lg bg-[#FEF9C3] px-4 py-2">
-            <img src={profileImage} alt="profileImg" />
+            <img src={profileImg} alt="profileImg" />
             <a
               href={ROUTE_PATHS.MYPAGE}
               className="text-primary-600 text-base font-medium"

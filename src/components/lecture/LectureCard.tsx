@@ -55,7 +55,7 @@ export default function LectureCard(lecture: Lecture) {
   const { addBookmarkMutation, deleteBookmarkMutation, getBookmarkQuery } =
     useBookmark()
 
-  const bookmarks = getBookmarkQuery.data?.results || []
+  const bookmarks = getBookmarkQuery.data?.results as Lecture[]
   const isBookmarked = bookmarks.some((i) => i.id === id)
 
   const handleBookmarkClick = () => {
