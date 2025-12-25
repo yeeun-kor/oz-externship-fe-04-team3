@@ -33,13 +33,14 @@ StudyHub는 이러한 문제 인식에서 출발하여 온라인 강의를 '완�
 | --- | --- | --- |
 | ![스터디 구인 공고 목록](https://github.com/user-attachments/assets/0834e1d3-efe6-413b-b96b-b5e80ea0e896)|  |  |
 
-| 구인 공고 북마크 및 링크 공유 | 구인 공고 지원하기 | 추가하기 |
+| 구인 공고 북마크 및 링크 공유 | 구인 공고 지원하기 | 구인 공고 삭제|
 | --- | --- | --- |
-| ![구인 공고 공유 및 북마크](https://github.com/user-attachments/assets/e173e0b0-0092-452e-a66d-3bba2815f781)|  ![공고 지원서 작성](https://github.com/user-attachments/assets/5203f2ae-519a-4c2a-a8a6-480718e74455)|  |
+| ![구인 공고 공유 및 북마크](https://github.com/user-attachments/assets/e173e0b0-0092-452e-a66d-3bba2815f781)|  ![공고 지원서 작성](https://github.com/user-attachments/assets/5203f2ae-519a-4c2a-a8a6-480718e74455)|![공고 삭제](https://github.com/user-attachments/assets/bd44270c-a856-46ff-bdc2-a0c8cd77d5ae)
+|
 
-| 지원 내역 조회 | 지원 내역 거절 승인 | 추가하기 |
+| 지원 내역 조회 | 지원 내역 거절 승인 | 구인 공고 수정 |
 | --- | --- | --- |
-| ![공고 관리](https://github.com/user-attachments/assets/8472ae10-c4cc-43c0-8ce0-4424d19c4417)| ![구인 공고 지원 승인 거절](https://github.com/user-attachments/assets/7459b5d0-35ee-4e17-b385-7b122c17d7ee)|  |
+| ![공고 관리](https://github.com/user-attachments/assets/8472ae10-c4cc-43c0-8ce0-4424d19c4417)| ![구인 공고 지원 승인 거절](https://github.com/user-attachments/assets/7459b5d0-35ee-4e17-b385-7b122c17d7ee)|![공고 수정](https://github.com/user-attachments/assets/a146b780-c14c-4c55-97fd-ba2c75fd8f73)|
 
 | 스터디 구인 공고 작성 | 구인 공고 작성 마크다운 | 태그 검색 및 파일 첨부|
 | --- | --- | --- |
