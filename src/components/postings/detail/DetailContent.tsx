@@ -41,7 +41,7 @@ export default function DetailContent({ recruitment }: Props) {
                   </p>
                   <div className="flex items-center justify-between pt-2">
                     <p className="text-lg font-bold text-yellow-600">
-                      {lecture.price.toLocaleString()}원
+                      {(lecture.price ?? 0).toLocaleString()}원
                     </p>
 
                     <a

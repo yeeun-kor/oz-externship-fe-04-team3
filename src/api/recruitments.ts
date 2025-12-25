@@ -7,86 +7,79 @@ import {
   mapRecruitmentItem,
   mapRecruitmentDetail,
 } from '@/mappers/recruitment/mapper'
+import { axiosInstance } from '@/api/axios'
+
+interface PaginatedResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: RecruitmentApiItem[]
+}
 
 export const getRecruitments = async (): Promise<Recruitment[]> => {
-  const response = await fetch('/api/v1/recruitments')
+  let allRecruitments: Recruitment[] = []
+  let nextUrl: string | null = '/v1/recruitments?page_size=100'
 
-  if (!response.ok) {
-    throw new Error('공고 목록을 불러오는데 실패했습니다.')
+  while (nextUrl) {
+    const response = await axiosInstance.get<PaginatedResponse>(nextUrl)
+    const data: PaginatedResponse = response.data
+    const items: RecruitmentApiItem[] = Array.isArray(data)
+      ? data
+      : (data?.results ?? [])
+
+    allRecruitments = [...allRecruitments, ...items.map(mapRecruitmentItem)]
+
+    if (data?.next) {
+      try {
+        const urlObj: URL = new URL(data.next)
+        nextUrl = urlObj.pathname + urlObj.search
+      } catch {
+        nextUrl = null
+      }
+    } else {
+      nextUrl = null
+    }
   }
 
-  const data: RecruitmentApiItem[] = await response.json()
-  return data.map(mapRecruitmentItem)
+  return allRecruitments
 }
 
 export const getRecruitmentDetail = async (
   id: string
 ): Promise<Recruitment> => {
-  const response = await fetch(`/api/v1/recruitments/${id}`)
-
-  if (!response.ok) {
-    throw new Error('공고를 불러오는데 실패했습니다.')
+  if (!id) {
+    throw new Error('유효하지 않은 공고 ID입니다.')
   }
 
-  const data: RecruitmentApiDetail = await response.json()
-  return mapRecruitmentDetail(data)
+  const { data } = await axiosInstance.get(`/v1/recruitments/${id}`)
+
+  const item: RecruitmentApiDetail = data?.data ?? data
+
+  return mapRecruitmentDetail(item)
 }
 
 export const incrementRecruitmentViews = async (id: string): Promise<void> => {
-  const response = await fetch(`/api/v1/recruitments/${id}/views`, {
-    method: 'POST',
-  })
-
-  if (!response.ok) {
-    throw new Error('조회수 증가에 실패했습니다.')
-  }
+  if (!id) return
+  await axiosInstance.post(`/v1/recruitments/${id}/views`).catch(() => {})
 }
 
 export const createRecruitment = async (
-  data: Partial<Recruitment>
+  payload: Partial<Recruitment>
 ): Promise<Recruitment> => {
-  const response = await fetch('/api/v1/recruitments', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    throw new Error('공고 작성에 실패했습니다.')
-  }
-
-  return response.json()
+  const { data } = await axiosInstance.post('/v1/recruitments', payload)
+  return data?.data ?? data
 }
 
 export const updateRecruitment = async (
   id: string,
-  data: Partial<Recruitment>
+  payload: Partial<Recruitment>
 ): Promise<Recruitment> => {
-  const response = await fetch(`/api/v1/recruitments/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    throw new Error('공고 수정에 실패했습니다.')
-  }
-
-  return response.json()
+  const { data } = await axiosInstance.put(`/v1/recruitments/${id}`, payload)
+  return data?.data ?? data
 }
 
 export const deleteRecruitment = async (id: string): Promise<void> => {
-  const response = await fetch(`/api/v1/recruitments/${id}`, {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    throw new Error('공고 삭제에 실패했습니다.')
-  }
+  await axiosInstance.delete(`/v1/recruitments/${id}`)
 }
 
 export interface ApplicationData {
@@ -95,18 +88,8 @@ export interface ApplicationData {
   contact?: string
 }
 
-export const postApplication = async (data: ApplicationData): Promise<void> => {
-  const response = await fetch('/api/v1/applications', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    throw new Error('지원서 제출에 실패했습니다.')
-  }
-
-  return response.json()
+export const postApplication = async (
+  payload: ApplicationData
+): Promise<void> => {
+  await axiosInstance.post('/v1/applications', payload)
 }

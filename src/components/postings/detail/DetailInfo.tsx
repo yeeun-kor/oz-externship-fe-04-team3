@@ -12,6 +12,22 @@ export default function DetailInfo({ recruitment }: Props) {
     return title.slice(0, maxLength) + '...'
   }
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) {
+      return '-'
+    }
+
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) {
+        return '-'
+      }
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    } catch {
+      return '-'
+    }
+  }
+
   return (
     <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
       <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
@@ -28,14 +44,14 @@ export default function DetailInfo({ recruitment }: Props) {
         <DollarSign className="mx-auto mb-2 h-6 w-6 text-gray-400" />
         <p className="mb-1 text-xs text-gray-600">예상 비용</p>
         <p className="font-bold">
-          {recruitment.points?.toLocaleString() || 0}원
+          {recruitment.estimatedFee ? `${recruitment.estimatedFee}원` : '미정'}
         </p>
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
         <Calendar className="mx-auto mb-2 h-6 w-6 text-gray-400" />
         <p className="mb-1 text-xs text-gray-600">마감일</p>
-        <p className="font-bold">{recruitment.deadline || '-'}</p>
+        <p className="font-bold">{formatDate(recruitment.deadline)}</p>
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">

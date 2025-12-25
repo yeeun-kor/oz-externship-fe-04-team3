@@ -50,9 +50,10 @@ export interface RecruitmentApiItem {
     id: number
     title: string
     instructor: string
-    thumbnail: string
-    price: number
-    link: string
+    thumbnail_img_url: string
+    discounted_price: number
+    original_price?: number
+    url_link: string
   }>
   tags?: Array<{
     id: number
@@ -88,9 +89,10 @@ export interface RecruitmentApiDetail {
     id: number
     title: string
     instructor: string
-    thumbnail: string
-    price: number
-    link: string
+    thumbnail_img_url: string
+    discounted_price: number
+    original_price?: number
+    url_link: string
   }>
   tags?: Array<{
     id: number

@@ -22,7 +22,15 @@ export const mapRecruitmentItem = (data: RecruitmentApiItem): Recruitment => {
     thumbnailType: 'image',
     tags: data.tags?.map((tag) => tag.name) ?? [],
     bookmarks: data.bookmark_count ?? 0,
-    lectureList: data.lectures ?? [],
+    lectureList:
+      data.lectures?.map((lecture) => ({
+        id: lecture.id,
+        title: lecture.title,
+        instructor: lecture.instructor,
+        thumbnail: lecture.thumbnail_img_url,
+        price: lecture.discounted_price ?? lecture.original_price ?? 0,
+        link: lecture.url_link,
+      })) ?? [],
     attachments: [],
   }
 }
@@ -47,7 +55,15 @@ export const mapRecruitmentDetail = (
     thumbnailType: 'image',
     tags: data.tags?.map((tag) => tag.name) ?? [],
     bookmarks: data.bookmark_count ?? 0,
-    lectureList: data.lectures ?? [],
+    lectureList:
+      data.lectures?.map((lecture) => ({
+        id: lecture.id,
+        title: lecture.title,
+        instructor: lecture.instructor,
+        thumbnail: lecture.thumbnail_img_url,
+        price: lecture.discounted_price ?? lecture.original_price ?? 0,
+        link: lecture.url_link,
+      })) ?? [],
     attachments: data.files ?? [],
   }
 }

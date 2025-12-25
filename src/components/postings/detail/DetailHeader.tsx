@@ -14,11 +14,18 @@ export default function DetailHeader({ recruitment, onBack }: Props) {
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) {
-      const now = new Date()
-      return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`
+      return '날짜 미정'
     }
-    const [year, month, day] = dateStr.split('.')
-    return `${year}년 ${month}월 ${day}일`
+
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) {
+        return '날짜 미정'
+      }
+      return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
+    } catch {
+      return '날짜 미정'
+    }
   }
 
   const handleBookmark = () => {
@@ -86,13 +93,13 @@ export default function DetailHeader({ recruitment, onBack }: Props) {
 
         <div className="flex items-center gap-1.5">
           <Eye className="h-4 w-4" />
-          <span>조회 {recruitment.views}</span>
+          <span>조회 {recruitment.views ?? 0}</span>
         </div>
       </div>
 
       <div className="mb-4 flex items-center gap-1.5 text-sm text-gray-600">
         <Bookmark className="h-4 w-4" />
-        <span>북마크 {recruitment.bookmarks}</span>
+        <span>북마크 {recruitment.bookmarks ?? 0}</span>
       </div>
 
       <div className="flex flex-wrap gap-2">

@@ -15,13 +15,14 @@ export function useRecruitments() {
       try {
         setIsLoading(true)
         const data = await getRecruitments()
-        setRecruitments(data)
+        setRecruitments(Array.isArray(data) ? data : [])
       } catch {
         setRecruitments([])
       } finally {
         setIsLoading(false)
       }
     }
+
     fetchData()
   }, [])
 

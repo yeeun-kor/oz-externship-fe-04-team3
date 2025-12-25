@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use((config) => {
   return config
 })
 
-// 모드 응답에 공통 에러 로직 처리
+// 모든 응답에 공통 에러 로직 처리
 let refreshPromise: Promise<string> | null = null
 
 axiosInstance.interceptors.response.use(
@@ -29,9 +29,9 @@ axiosInstance.interceptors.response.use(
     return response
   },
   async function (error) {
-    const originalRequest = error.config //에러헤더
-    const status = error.response?.status //에러응답코드
-    const isRefreshCall = originalRequest.url.includes(
+    const originalRequest = error.config
+    const status = error.response?.status
+    const isRefreshCall = originalRequest?.url?.includes(
       '/v1/accounts/token/refresh'
     )
 
@@ -43,12 +43,11 @@ axiosInstance.interceptors.response.use(
 
     // 401: 토큰 갱신 후 재시도
     if (status === 401) {
-      // 리프레시 호출 자체가 401이면 더 이상 시도하지 않고 클리어
       if (isRefreshCall) {
         useAuthStore.getState().clearAuth?.()
         return Promise.reject(error)
       }
-      // 중복 재시도 방지
+
       if (originalRequest._retry) {
         useAuthStore.getState().clearAuth?.()
         return Promise.reject(error)
@@ -63,23 +62,28 @@ axiosInstance.interceptors.response.use(
         refreshPromise = null
         useAuthStore.getState().setAccessToken(accessToken)
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
-        return axiosInstance(originalRequest) //헤더에 토큰 다시 넣어서 재요청
+        return axiosInstance(originalRequest)
       } catch (refreshError) {
         refreshPromise = null
         useAuthStore.getState().clearAuth?.()
         return Promise.reject(refreshError)
       }
     }
-    // 401과 400을 제외한 에러코드
-    else if (
-      status === 403 ||
-      status === 404 ||
-      status === 409 ||
-      status === 500
-    ) {
-      showToast.error(`오류`, `${error.response?.data?.error_detail}`)
+
+    if (status === 404) {
       return Promise.reject(error)
     }
+
+    // 403, 409, 500만 토스트 표시
+    if (status === 403 || status === 409 || status === 500) {
+      const errorMessage =
+        error.response?.data?.error_detail ??
+        '요청 처리 중 오류가 발생했습니다.'
+
+      showToast.error('오류', errorMessage)
+      return Promise.reject(error)
+    }
+
     return Promise.reject(error)
   }
 )

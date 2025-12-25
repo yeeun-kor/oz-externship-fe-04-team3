@@ -14,6 +14,18 @@ export default function RecruitmentCard({
     onClick?.(recruitment.id)
   }
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '-'
+
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) return '-'
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    } catch {
+      return '-'
+    }
+  }
+
   const lectures = recruitment.lectureList ?? []
 
   return (
@@ -60,7 +72,7 @@ export default function RecruitmentCard({
           {recruitment.deadline && (
             <div className="mb-2 flex items-center gap-2 text-xs text-gray-600 md:text-sm">
               <Calendar className="h-4 w-4" />
-              <span>마감일 : {recruitment.deadline}</span>
+              <span>마감일 : {formatDate(recruitment.deadline)}</span>
             </div>
           )}
 
