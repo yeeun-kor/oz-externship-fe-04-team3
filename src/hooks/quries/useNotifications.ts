@@ -8,6 +8,7 @@ import {
 import type { AlarmItem } from '@/types/alarm'
 import { useCursorInfiniteQuery } from './useCursorInfiniteQuery'
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 
 type FilterKey = 'all' | 'unread' | 'read'
 
@@ -60,9 +61,21 @@ export const useNotifications = (filter: FilterKey) => {
   const alarms = query.data?.pages.flatMap((p) => p.results ?? []) ?? []
   const errorMessage = query.error ? query.error.message : null
 
-  const meta = query.data?.pages?.[0]
-  const totalCount = meta?.total ?? alarms.length
-  const unreadCount = meta?.unread_total ?? 0
+  // 카운트 깜빡임 방지를 위해 상태에 보관 후 값이 달라질 때만 업데이트
+  const [counts, setCounts] = useState({ total: 0, unread: 0 })
+  useEffect(() => {
+    const meta = query.data?.pages?.[0]
+    if (!meta) return
+    const nextTotal = meta.total ?? alarms.length
+    const nextUnread = meta.unread_total ?? counts.unread
+    if (nextTotal !== counts.total || nextUnread !== counts.unread) {
+      setCounts({ total: nextTotal, unread: nextUnread })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.data?.pages, alarms.length])
+
+  const totalCount = counts.total
+  const unreadCount = counts.unread
   const readCount = Math.max(0, totalCount - unreadCount)
 
   return {
