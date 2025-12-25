@@ -4,16 +4,18 @@ import { ROUTE_PATHS } from '@/constant/route'
 import { useAuthStore } from '@/store/userStore'
 import { Menu } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button } from '../Button'
 import MobileModal from './MobileModal'
 import User from './User'
+
 interface HeaderProps {
   isSideBarOpen: boolean
   setIsSideBarOpen: (value: boolean) => void
 }
+
 function Header({ isSideBarOpen, setIsSideBarOpen }: HeaderProps) {
   const navigate = useNavigate()
-  const { loginState, setLoginState } = useAuthStore()
+  const { loginState } = useAuthStore()
+
   const handleSideBar = () => {
     setIsSideBarOpen(!isSideBarOpen)
   }
@@ -37,25 +39,12 @@ function Header({ isSideBarOpen, setIsSideBarOpen }: HeaderProps) {
         >
           <img src={logoImg} alt="logoImg" className="flex h-[35px] w-[35px]" />
           <h2 className="text-2xl font-bold text-[#CA8A04]">StudyHub</h2>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation()
-              if (loginState === 'GUEST') {
-                setLoginState('USER')
-              } else {
-                setLoginState('GUEST')
-              }
-            }}
-          >
-            {loginState}
-          </Button>
         </div>
-        {/* 로그인 하지 않았을때의 UI */}
         {loginState === 'GUEST' && <Guest />}
-        {/* 로그인 했을때 UI */}
         {loginState === 'USER' && <User />}
       </div>
     </div>
   )
 }
+
 export default Header

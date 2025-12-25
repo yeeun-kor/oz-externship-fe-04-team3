@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import {
   getRecruitmentDetail,
-  incrementRecruitmentViews,
+  deleteRecruitment,
+  getMyRecruitments,
 } from '@/api/recruitments'
 import type { Recruitment } from '@/types/recruitment'
 import DetailHeader from '@/components/postings/detail/DetailHeader'
@@ -17,15 +18,13 @@ import { useAuthStore } from '@/store/userStore'
 export default function RecruitmentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-
   const [recruitment, setRecruitment] = useState<Recruitment | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
-
-  const { user, loginState } = useAuthStore()
+  const [isAuthor, setIsAuthor] = useState(false)
+  const { loginState } = useAuthStore()
   const isLoggedIn = loginState === 'USER'
-  const isAuthor = isLoggedIn && recruitment?.authorId === user?.id
 
   useEffect(() => {
     if (!id) return
@@ -37,7 +36,6 @@ export default function RecruitmentDetailPage() {
       try {
         const data = await getRecruitmentDetail(id)
         setRecruitment(data)
-        await incrementRecruitmentViews(id).catch(() => {})
       } catch {
         setError('공고를 불러오는데 실패했습니다.')
       } finally {
@@ -47,6 +45,55 @@ export default function RecruitmentDetailPage() {
 
     fetchDetail()
   }, [id])
+
+  useEffect(() => {
+    if (!id || !isLoggedIn) {
+      setIsAuthor(false)
+      return
+    }
+
+    const checkAuthor = async () => {
+      try {
+        const myRecruitments = await getMyRecruitments()
+        const myRecruitmentIds = Array.isArray(myRecruitments)
+          ? myRecruitments.map((r) => r.uuid)
+          : []
+        setIsAuthor(myRecruitmentIds.includes(id))
+      } catch {
+        setIsAuthor(false)
+      }
+    }
+
+    checkAuthor()
+  }, [id, isLoggedIn])
+
+  const handleBookmark = () => {
+    showToast.warning('준비 중', '북마크 기능은 추후 업데이트 예정입니다.')
+  }
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      showToast.success('링크 복사', '링크가 클립보드에 복사되었습니다')
+    } catch {
+      showToast.error('복사 실패', '링크 복사에 실패했습니다')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!id) return
+
+    const confirmed = window.confirm('정말 삭제하시겠습니까?')
+    if (!confirmed) return
+
+    try {
+      await deleteRecruitment(id)
+      showToast.success('삭제 완료', '공고가 삭제되었습니다')
+      navigate('/recruitments')
+    } catch {
+      showToast.error('삭제 실패', '공고 삭제에 실패했습니다')
+    }
+  }
 
   if (!id) {
     return <Navigate to="/recruitments" replace />
@@ -97,13 +144,9 @@ export default function RecruitmentDetailPage() {
           onEdit={
             isAuthor ? () => navigate(`/recruitments/edit/${id}`) : undefined
           }
-          onDelete={
-            isAuthor
-              ? () => showToast.warning('준비 중', '삭제 기능 준비중')
-              : undefined
-          }
-          onBookmark={() => {}}
-          onShare={() => {}}
+          onDelete={isAuthor ? handleDelete : undefined}
+          onBookmark={handleBookmark}
+          onShare={handleShare}
         />
       </div>
 

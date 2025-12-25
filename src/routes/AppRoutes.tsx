@@ -48,6 +48,15 @@ function AppRoutes() {
           }
         />
 
+        <Route
+          path="/recruitments/edit/:id"
+          element={
+            <ProtectedRoute>
+              <WritePage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/recruitments" element={<RecruitmentListPage />} />
         <Route path="/recruitments/:id" element={<RecruitmentDetailPage />} />
 

@@ -93,3 +93,30 @@ export const postApplication = async (
 ): Promise<void> => {
   await axiosInstance.post('/v1/applications', payload)
 }
+
+export const getMyRecruitments = async (): Promise<
+  { uuid: string; title: string }[]
+> => {
+  const { data } = await axiosInstance.get('/v1/recruitments/mine')
+  return data
+}
+
+export interface RecruitmentBookmark {
+  id: string
+  recruitment_uuid: string
+  created_at?: string
+}
+
+export const createRecruitmentBookmark = async (
+  recruitmentId: string
+): Promise<void> => {
+  await axiosInstance.post('/v1/recruitment-bookmarks', {
+    recruitment_uuid: recruitmentId,
+  })
+}
+
+export const deleteRecruitmentBookmark = async (
+  bookmarkId: string
+): Promise<void> => {
+  await axiosInstance.delete(`/v1/recruitment-bookmarks/${bookmarkId}`)
+}

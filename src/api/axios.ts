@@ -31,37 +31,39 @@ axiosInstance.interceptors.response.use(
   async function (error) {
     const originalRequest = error.config
     const status = error.response?.status
+    const { accessToken } = useAuthStore.getState()
     const isRefreshCall = originalRequest?.url?.includes(
       '/v1/accounts/token/refresh'
     )
 
-    // 네트워크 에러 처리
     if (!error.response) {
       showToast.error('네트워크 오류', '네트워크 연결을 확인해주세요.')
       return Promise.reject(error)
     }
 
-    // 401: 토큰 갱신 후 재시도
-    if (status === 401) {
-      if (isRefreshCall) {
-        useAuthStore.getState().clearAuth?.()
-        return Promise.reject(error)
-      }
+    if (status === 401 && !accessToken) {
+      return Promise.reject(error)
+    }
 
-      if (originalRequest._retry) {
+    if (status === 401) {
+      if (isRefreshCall || originalRequest._retry) {
         useAuthStore.getState().clearAuth?.()
         return Promise.reject(error)
       }
 
       originalRequest._retry = true
+
       try {
         if (!refreshPromise) {
           refreshPromise = getAccessTokenApi()
         }
-        const accessToken = await refreshPromise
+
+        const newAccessToken = await refreshPromise
         refreshPromise = null
-        useAuthStore.getState().setAccessToken(accessToken)
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+
+        useAuthStore.getState().setAccessToken(newAccessToken)
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
         return axiosInstance(originalRequest)
       } catch (refreshError) {
         refreshPromise = null
@@ -74,7 +76,6 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // 403, 409, 500만 토스트 표시
     if (status === 403 || status === 409 || status === 500) {
       const errorMessage =
         error.response?.data?.error_detail ??

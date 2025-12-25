@@ -5,7 +5,7 @@ import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
 import { useAuthStore } from '@/store/userStore'
 import { QueryClient } from '@tanstack/react-query'
-import { ArrowUp, Plus, Search } from 'lucide-react'
+import { ArrowUp, Plus, Search, List } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -42,12 +42,11 @@ export default function RecruitmentListPage() {
     navigate(`/recruitments/${id}`)
   }
 
-  /* 데이터 프리페칭 */
-  const queryClient = new QueryClient()
   useEffect(() => {
+    const queryClient = new QueryClient()
     const prefetchData = async () => {
       await queryClient.prefetchQuery({
-        queryKey: ['lecture-recommend'], //프레페칭 키와 함수 적용
+        queryKey: ['lecture-recommend'],
         queryFn: () => getUserRecommendsLecturesApi(),
       })
     }
@@ -68,11 +67,32 @@ export default function RecruitmentListPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold md:text-3xl">스터디 구인 공고</h1>
-          <p className="mt-1 text-sm text-gray-600 md:text-base">
-            새로운 스터디 팀원을 찾거나 관심있는 스터디에 참여해보세요!
-          </p>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold md:text-3xl">스터디 구인 공고</h1>
+            <p className="mt-1 text-sm text-gray-600 md:text-base">
+              새로운 스터디 팀원을 찾거나 관심있는 스터디에 참여해보세요!
+            </p>
+          </div>
+
+          {isLoggedIn && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate('/manage')}
+                className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <List className="h-4 w-4" />
+                공고 관리
+              </button>
+              <button
+                onClick={() => navigate('/write')}
+                className="flex items-center gap-2 rounded-lg bg-yellow-400 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-500"
+              >
+                <Plus className="h-4 w-4" />
+                공고 작성하기
+              </button>
+            </div>
+          )}
         </div>
 
         {isLoggedIn && (
@@ -165,7 +185,7 @@ export default function RecruitmentListPage() {
         )}
       </div>
 
-      <div className="fixed right-6 bottom-6">
+      <div className="fixed right-8 bottom-25 z-50">
         {showScrollTop && (
           <button
             onClick={scrollToTop}

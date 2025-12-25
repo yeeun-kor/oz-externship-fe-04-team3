@@ -15,7 +15,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react'
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getMyRecruitmentDetail } from '@/api/myRecruitment'
 import { getLecturesApi } from '@/api/lecture'
@@ -310,15 +310,18 @@ function ExtraInfoSection({
   )
 }
 
-export default function WriteForm() {
+export default function WriteForm({
+  recruitmentId: propRecruitmentId,
+}: {
+  recruitmentId?: string
+}) {
   const [selectedTags, setSelectedTags] = useState<TagOption[]>([])
   const [isTagModalOpen, setIsTagModalOpen] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [groupPrefilled, setGroupPrefilled] = useState(false)
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const recruitmentId = searchParams.get('recruitmentId')
+  const recruitmentId = propRecruitmentId
   const isEditing = location.pathname.includes('/edit') || !!recruitmentId
   const { state, actions, options } = useWriteRecruitmentForm(
     recruitmentId || undefined,
@@ -337,7 +340,6 @@ export default function WriteForm() {
   } = actions
   const lecturesFromGroup = options.groupDetail?.lectures ?? []
 
-  // 신규/다른 공고로 진입 시 내부 상태 초기화
   useEffect(() => {
     setInitialized(false)
     setGroupPrefilled(false)
@@ -369,7 +371,7 @@ export default function WriteForm() {
       return mapMyRecruitmentDetailToWrite(res)
     },
     enabled: !!recruitmentId,
-    staleTime: 0, // 페이지 진입 시마다 최신 정보 조회
+    staleTime: 0,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: 'always',
@@ -385,7 +387,6 @@ export default function WriteForm() {
     0
   )
 
-  // 그룹이 선택된 상태라면 강의 합계(없으면 0)로 예상비용을 자동 세팅
   useEffect(() => {
     if (!state.studyGroupId) return
     const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
@@ -399,7 +400,6 @@ export default function WriteForm() {
     setEstimatedFee,
   ])
 
-  // 스터디 그룹 변경 시 강의 합계로 예상 비용 자동 입력 (강의 없으면 0)
   const prevGroupIdRef = useRef(state.studyGroupId)
   useEffect(() => {
     if (!state.studyGroupId) return
@@ -417,7 +417,6 @@ export default function WriteForm() {
     setEstimatedFee,
   ])
 
-  // 스터디 그룹 자동 설정: 상세/옵션이 모두 준비된 뒤 한 번만 수행
   useEffect(() => {
     if (groupPrefilled) return
     if (!detail?.study_group) return
@@ -445,7 +444,6 @@ export default function WriteForm() {
     setExpectedHeadcount(
       detail.expected_headcount ? String(detail.expected_headcount) : ''
     )
-    // 스터디 그룹 자동 설정은 옵션 준비 후 별도 effect에서 한 번만 처리
     if (detail.files?.length) {
       const presetFiles = detail.files.map(
         (f: { file_name: string; file_url: string }, idx: number) => {
