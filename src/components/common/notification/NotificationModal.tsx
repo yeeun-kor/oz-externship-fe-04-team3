@@ -10,7 +10,6 @@ import { getAccessTokenApi } from '@/api/userInformation'
 import { useNotificationStream } from '@/hooks/useNotificationStream'
 import type { AlarmItem } from '@/types/alarm'
 import { useAuthStore } from '@/store/userStore'
-import { API_BASE_URL } from '@/constant/api'
 
 import NotificationCard from './NotificationCard'
 
@@ -101,16 +100,11 @@ export default function NotificationModal({
         }
 
         const urlObj = new URL(alarm.backUrl, window.location.origin)
-        const backendHost = new URL(API_BASE_URL).host
-        const targetHost = urlObj.host
         const isSameOrigin = urlObj.origin === window.location.origin
-        const shouldNewTab = !isSameOrigin && backendHost !== targetHost
-
         if (isSameOrigin) {
           navigate(urlObj.pathname + urlObj.search + urlObj.hash)
-        } else if (shouldNewTab) {
-          window.open(urlObj.toString(), '_blank', 'noopener,noreferrer')
         } else {
+          // 도메인이 다르면 현재 창에서 이동
           window.location.href = urlObj.toString()
         }
       })
