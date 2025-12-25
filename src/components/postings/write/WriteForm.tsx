@@ -17,8 +17,12 @@ import {
 } from 'react'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getRecruitmentDetail } from '@/api/recruitments'
+import { getMyRecruitmentDetail } from '@/api/myRecruitment'
 import { getLecturesApi } from '@/api/lecture'
+import {
+  mapMyRecruitmentDetailToWrite,
+  type WriteRecruitmentDetail,
+} from '@/mappers/recruitment/myRecruitmentMapper'
 
 type WriteFormHook = ReturnType<typeof useWriteRecruitmentForm>
 
@@ -310,6 +314,7 @@ export default function WriteForm() {
   const [selectedTags, setSelectedTags] = useState<TagOption[]>([])
   const [isTagModalOpen, setIsTagModalOpen] = useState(false)
   const [initialized, setInitialized] = useState(false)
+  const [groupPrefilled, setGroupPrefilled] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -324,10 +329,20 @@ export default function WriteForm() {
     setContent,
     setEstimatedFee,
     setExpectedHeadcount,
+    setStudyGroupId,
+    setUploadedFiles,
+    setImageUrls,
     setTagIds,
     handleDeadlineChange,
   } = actions
   const lecturesFromGroup = options.groupDetail?.lectures ?? []
+
+  // 신규/다른 공고로 진입 시 내부 상태 초기화
+  useEffect(() => {
+    setInitialized(false)
+    setGroupPrefilled(false)
+    setStudyGroupId('')
+  }, [recruitmentId, setStudyGroupId])
 
   const { data: lectureDetails = [], isLoading: lecturesLoading } = useQuery({
     queryKey: ['group-lecture-details', lecturesFromGroup.map((l) => l.id)],
@@ -346,34 +361,18 @@ export default function WriteForm() {
     enabled: lecturesFromGroup.length > 0,
   })
 
-  type WriteRecruitmentDetail = {
-    title: string
-    content: string
-    estimated_fee?: number
-    expected_headcount: number
-    close_at: string
-    tags: { id: number; name: string }[]
-    image_urls?: string | string[]
-    study_group?: number
-    files?: { file_name: string; file_url: string }[]
-  }
-
   const { data: detail } = useQuery<WriteRecruitmentDetail | undefined>({
     queryKey: ['my-recruitment-detail', recruitmentId],
     queryFn: async () => {
       if (!recruitmentId) return undefined
-      const res = (await getRecruitmentDetail(
-        recruitmentId
-      )) as unknown as WriteRecruitmentDetail
-      // 디버깅용: 상세 데이터 확인
-      // eslint-disable-next-line no-console
-      console.log('Recruitment detail', res)
-      return res
+      const res = await getMyRecruitmentDetail(recruitmentId)
+      return mapMyRecruitmentDetailToWrite(res)
     },
     enabled: !!recruitmentId,
     staleTime: 0, // 페이지 진입 시마다 최신 정보 조회
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    refetchOnMount: 'always',
   })
 
   const formattedLectures = lectureDetails.map((lec) => ({
@@ -390,8 +389,15 @@ export default function WriteForm() {
   useEffect(() => {
     if (!state.studyGroupId) return
     const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-    setEstimatedFee(String(fallback))
-  }, [state.studyGroupId, totalLecturePrice, setEstimatedFee])
+    if (state.estimatedFee !== String(fallback)) {
+      setEstimatedFee(String(fallback))
+    }
+  }, [
+    state.studyGroupId,
+    totalLecturePrice,
+    state.estimatedFee,
+    setEstimatedFee,
+  ])
 
   // 스터디 그룹 변경 시 강의 합계로 예상 비용 자동 입력 (강의 없으면 0)
   const prevGroupIdRef = useRef(state.studyGroupId)
@@ -399,10 +405,35 @@ export default function WriteForm() {
     if (!state.studyGroupId) return
     if (prevGroupIdRef.current !== state.studyGroupId) {
       const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-      actions.setEstimatedFee(String(fallback))
+      if (state.estimatedFee !== String(fallback)) {
+        setEstimatedFee(String(fallback))
+      }
       prevGroupIdRef.current = state.studyGroupId
     }
-  }, [state.studyGroupId, totalLecturePrice, actions])
+  }, [
+    state.studyGroupId,
+    totalLecturePrice,
+    state.estimatedFee,
+    setEstimatedFee,
+  ])
+
+  // 스터디 그룹 자동 설정: 상세/옵션이 모두 준비된 뒤 한 번만 수행
+  useEffect(() => {
+    if (groupPrefilled) return
+    if (!detail?.study_group) return
+    if (!options.groupOptions.length) return
+    const targetId = String(detail.study_group)
+    if (state.studyGroupId !== targetId) {
+      setStudyGroupId(targetId)
+    }
+    setGroupPrefilled(true)
+  }, [
+    detail?.study_group,
+    options.groupOptions.length,
+    state.studyGroupId,
+    groupPrefilled,
+    setStudyGroupId,
+  ])
 
   useEffect(() => {
     if (!detail || initialized) return
@@ -414,9 +445,7 @@ export default function WriteForm() {
     setExpectedHeadcount(
       detail.expected_headcount ? String(detail.expected_headcount) : ''
     )
-    if (detail.study_group) {
-      actions.setStudyGroupId(String(detail.study_group))
-    }
+    // 스터디 그룹 자동 설정은 옵션 준비 후 별도 effect에서 한 번만 처리
     if (detail.files?.length) {
       const presetFiles = detail.files.map(
         (f: { file_name: string; file_url: string }, idx: number) => {
@@ -438,13 +467,13 @@ export default function WriteForm() {
           }
         }
       )
-      actions.setUploadedFiles(presetFiles)
+      setUploadedFiles(presetFiles)
     }
     if (detail.image_urls) {
       const urls = Array.isArray(detail.image_urls)
         ? detail.image_urls
         : [detail.image_urls]
-      actions.setImageUrls(urls.filter(Boolean))
+      setImageUrls(urls.filter(Boolean))
     }
     setTagIds(detail.tags?.map((t: { id: number }) => t.id) ?? [])
     setSelectedTags(
@@ -460,12 +489,15 @@ export default function WriteForm() {
   }, [
     detail,
     initialized,
+    groupPrefilled,
     setTitle,
     setContent,
     setEstimatedFee,
     setExpectedHeadcount,
     setTagIds,
     handleDeadlineChange,
+    state.studyGroupId,
+    setStudyGroupId,
   ])
 
   return (

@@ -1,7 +1,7 @@
 import type {
   MyRecruitmentPageResponse,
   MyRecruitmentParams,
-  MyRecruitmentDetail,
+  MyRecruitmentDetailResponse,
 } from '@/types/myRecruitment'
 import { axiosInstance } from './axios'
 
@@ -30,7 +30,9 @@ export async function deleteMyRecruitment(id: string) {
 
 export async function getMyRecruitmentDetail(
   id: string
-): Promise<MyRecruitmentDetail> {
-  const { data } = await axiosInstance.get(`/v1/recruitments/${id}`)
+): Promise<MyRecruitmentDetailResponse> {
+  const { data } = await axiosInstance.get<MyRecruitmentDetailResponse>(
+    `/v1/recruitments/${id}`
+  )
   return data
 }

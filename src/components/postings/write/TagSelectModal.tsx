@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Modal } from '@/components/common'
 import { DashedBox } from '@/components/common/DashedBox'
 import { Input } from '@/components/input'
@@ -6,6 +6,18 @@ import { Check, SearchIcon, X } from 'lucide-react'
 import { Separator } from '@/components/common/separator'
 import { showToast } from '@/components/common/toast/Toast'
 import TagSvg from '@/assets/icons/Tag.svg'
+import {
+  getRecruitmentTags,
+  createRecruitmentTag,
+  type RecruitmentTag,
+  type RecruitmentTagListResponse,
+} from '@/api/recruitmentTag'
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import useDebounce from '@/hooks/useDebounce'
 
 export type TagOption = {
   id: string
@@ -15,30 +27,16 @@ export type TagOption = {
 type TagSelectModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  availableTags?: TagOption[]
   onConfirm?: (selected: TagOption[]) => void
   maxSelectable?: number
   initialSelected?: TagOption[]
 }
-
-const MOCK_TAGS: TagOption[] = [
-  { id: '1', name: '초보자환영' },
-  { id: '2', name: '심화학습' },
-  { id: '3', name: '면접준비' },
-  { id: '4', name: '주말스터디' },
-  { id: '5', name: '온라인진행' },
-  { id: '6', name: '오프라인' },
-  { id: '7', name: '스터디원모집' },
-  { id: '8', name: '백엔드' },
-  { id: '9', name: '프론트엔드' },
-]
 
 const PAGE_SIZE = 5
 
 export function TagSelectModal({
   open,
   onOpenChange,
-  availableTags = MOCK_TAGS,
   onConfirm,
   maxSelectable = 5,
   initialSelected = [],
@@ -48,20 +46,34 @@ export function TagSelectModal({
     initialSelected.map((t) => t.id)
   )
   const [page, setPage] = useState(1)
+  const queryClient = useQueryClient()
+  const debouncedSearch = useDebounce(search, 400)
 
-  // 검색/페이지네이션 계산
-  const filtered = useMemo(() => {
-    const keyword = search.trim().toLowerCase()
-    if (!keyword) return availableTags
-    return availableTags.filter((tag) =>
-      tag.name.toLowerCase().includes(keyword)
-    )
-  }, [availableTags, search])
+  const { data, isLoading } = useQuery({
+    queryKey: ['recruitment-tags', debouncedSearch, page],
+    queryFn: async () => {
+      const res = await getRecruitmentTags({
+        keyword: debouncedSearch || undefined,
+        page,
+        page_size: PAGE_SIZE,
+      })
+      return res
+    },
+    staleTime: 0,
+    placeholderData: keepPreviousData,
+  })
 
-  const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const start = (page - 1) * PAGE_SIZE
-  const paginated = filtered.slice(start, start + PAGE_SIZE)
+  const results = (data as RecruitmentTagListResponse | undefined)?.results
+  const availableTags: TagOption[] =
+    results?.map((t: RecruitmentTag) => ({
+      id: String(t.id),
+      name: t.name,
+    })) ?? []
+
+  const totalCount =
+    (data as RecruitmentTagListResponse | undefined)?.count ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const paginated = availableTags
 
   const selectedTags = availableTags.filter((tag) =>
     selectedIds.includes(tag.id)
@@ -96,7 +108,8 @@ export function TagSelectModal({
     setPage(1)
   }
 
-  const hasNoResult = search.trim().length > 0 && filtered.length === 0
+  const hasNoResult =
+    search.trim().length > 0 && !isLoading && availableTags.length === 0
 
   // 모달 열릴 때 초기 선택값 반영
   useEffect(() => {
@@ -139,6 +152,22 @@ export function TagSelectModal({
     )
   }
 
+  const handleCreateTag = async () => {
+    const name = search.trim()
+    if (!name) return
+    try {
+      const newTag = await createRecruitmentTag(name)
+      // 새 태그를 선택 상태에 추가하고 목록 재요청
+      setSelectedIds((prev) =>
+        Array.from(new Set([...prev, String(newTag.id)]))
+      )
+      queryClient.invalidateQueries({ queryKey: ['recruitment-tags'] })
+      showToast.success('태그 생성', '새 태그가 추가되었습니다.')
+    } catch (error) {
+      showToast.error('태그 생성 실패', '태그 생성 중 오류가 발생했습니다.')
+    }
+  }
+
   const renderEmptyState = () => (
     <div className="flex flex-col gap-3 p-6">
       <DashedBox
@@ -152,7 +181,7 @@ export function TagSelectModal({
               검색 결과에 원하는 태그가 없는 경우 새로 등록할 수 있습니다.
             </p>
           </div>
-          <Button variant="primary" type="button">
+          <Button variant="primary" type="button" onClick={handleCreateTag}>
             새로 등록하기
           </Button>
         </div>
@@ -174,7 +203,7 @@ export function TagSelectModal({
   const renderTagList = () => (
     <div className="flex flex-col gap-3 p-6">
       <div className="flex items-center justify-between text-sm text-gray-700">
-        <span>사용 가능한 태그 ({availableTags.length}개)</span>
+        <span>사용 가능한 태그 ({totalCount}개)</span>
       </div>
       <div className="grid gap-2">
         {paginated.map((tag) => {
@@ -277,7 +306,15 @@ export function TagSelectModal({
 
           {renderSelectedTags()}
 
-          {hasNoResult ? renderEmptyState() : renderTagList()}
+          {isLoading ? (
+            <div className="p-6 text-sm text-gray-500">
+              태그를 불러오는 중...
+            </div>
+          ) : hasNoResult ? (
+            renderEmptyState()
+          ) : (
+            renderTagList()
+          )}
         </div>
       }
       footer={{

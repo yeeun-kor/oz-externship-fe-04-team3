@@ -36,6 +36,11 @@ export default function Manage() {
     rootMargin: '50px',
   })
 
+  // 페이지 진입 시 스크롤 최상단으로 이동
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [])
+
   useEffect(() => {
     if (!inView || !hasNextPage || isFetchingNextPage) return
     fetchNextPage()

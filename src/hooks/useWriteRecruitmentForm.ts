@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { getStudyGroupDetail, getStudyGroups } from '@/api/studyGroup'
 import { getPresignedUrl, uploadToPresigned } from '@/api/uploads'
 import { showToast } from '@/components/common/toast/Toast'
 import { axiosInstance } from '@/api/axios'
 import type { UploadedFile } from '@/components/common/uploader/FileUploader'
+import axios from 'axios'
 
 const formatCloseAt = (date: Date) => {
   // 로컬 타임존 기준으로 00:00:00.000 시각을 ISO+오프셋 형태로 생성
@@ -45,6 +46,7 @@ export function useWriteRecruitmentForm(
   isEditing = false
 ) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [deadline, setDeadline] = useState<Date | undefined>()
   const [content, setContent] = useState('')
   const [title, setTitle] = useState('')
@@ -206,6 +208,9 @@ export function useWriteRecruitmentForm(
           `/v1/recruitments/${recruitmentId}`,
           parsed.data
         )
+        queryClient.invalidateQueries({
+          queryKey: ['my-recruitment-detail', recruitmentId],
+        })
         showToast.success('공고 수정', '공고가 수정되었습니다.')
       } else {
         await axiosInstance.post('/v1/recruitments', parsed.data)
@@ -213,7 +218,28 @@ export function useWriteRecruitmentForm(
       }
       navigate('/manage')
     } catch (err) {
-      showToast.error('공고 등록 실패', (err as Error)?.message ?? '')
+      // 개별 요청에서 에러 메시지 가공
+      let message = '요청을 처리할 수 없습니다.'
+      if (axios.isAxiosError(err)) {
+        const rawDetail =
+          err.response?.data?.error_detail ??
+          err.response?.data?.detail ??
+          err.response?.data
+        if (typeof rawDetail === 'string') {
+          message = rawDetail
+        } else if (rawDetail && typeof rawDetail === 'object') {
+          const collected = Object.values(rawDetail)
+            .flat()
+            .map((v) => String(v))
+            .join(' / ')
+          message = collected || message
+        } else if (err.message) {
+          message = err.message
+        }
+      } else if (err instanceof Error) {
+        message = err.message
+      }
+      showToast.error('공고 등록 실패', message)
     }
   }
 
