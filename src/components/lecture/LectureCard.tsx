@@ -56,7 +56,7 @@ export default function LectureCard(lecture: Lecture) {
     useBookmark()
 
   const bookmarks = getBookmarkQuery.data?.results as Lecture[]
-  const isBookmarked = bookmarks.some((i) => i.id === id)
+  const isBookmarked = bookmarks?.some((i) => i.id === id) ?? false
 
   const handleBookmarkClick = () => {
     /* props로 전달받은 유저 상태 분기 처리 */
