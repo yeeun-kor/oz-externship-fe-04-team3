@@ -1,5 +1,5 @@
 import type { Recruitment } from '@/types/recruitment'
-import { FileText, Download } from 'lucide-react'
+import { Download, FileText } from 'lucide-react'
 
 interface Props {
   recruitment: Recruitment
@@ -41,7 +41,11 @@ export default function DetailContent({ recruitment }: Props) {
                   </p>
                   <div className="flex items-center justify-between pt-2">
                     <p className="text-lg font-bold text-yellow-600">
-                      {(lecture.price ?? 0).toLocaleString()}원
+                      {lecture.price === 0 ? (
+                        <h4>무료</h4>
+                      ) : (
+                        <h4>₩{lecture.price.toLocaleString('ko-KR')}</h4>
+                      )}
                     </p>
 
                     <a

@@ -88,6 +88,7 @@ export default function Courses() {
       <section className="courses_filter flex flex-col items-center gap-2 rounded-md border border-gray-200 bg-white p-6 sm:flex-row">
         <Input
           prefix={<Search />}
+          placeholder="강의명이나 강사명으로 검색..."
           className="h-[38px]"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}

@@ -1,13 +1,15 @@
 import { getUserRecommendsLecturesApi } from '@/api/lecture'
 import { getRecruitmentTags } from '@/api/recruitmentTag'
+
 import { Select } from '@/components/common'
 import PublicBanner from '@/components/postings/recruitment/PublicBanner'
 import RecommendedSection from '@/components/postings/recruitment/RecommendedSection'
 import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
+import { queryClient } from '@/main'
 import { sortDataRecruitment } from '@/mappers/recruitment/mapper'
 import { useAuthStore } from '@/store/userStore'
-import { QueryClient, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowDownWideNarrow, ArrowUp, List, Plus, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -50,7 +52,6 @@ export default function RecruitmentListPage() {
   }
 
   useEffect(() => {
-    const queryClient = new QueryClient()
     const prefetchData = async () => {
       await queryClient.prefetchQuery({
         queryKey: ['lecture-recommend'],
