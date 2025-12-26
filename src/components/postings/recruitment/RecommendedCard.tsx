@@ -1,5 +1,6 @@
-import { Bookmark, Calendar, Eye, User } from 'lucide-react'
+import defalutImage from '@/assets/images/DefaultImage.png'
 import type { Recruitment } from '@/types/recruitment'
+import { Bookmark, Calendar, Eye, User } from 'lucide-react'
 
 interface Props {
   recruitment: Recruitment
@@ -24,7 +25,7 @@ export default function RecommendedCard({ recruitment, onClick }: Props) {
     >
       <div className="h-36 w-full overflow-hidden rounded-t-lg md:h-36">
         <img
-          src={recruitment.thumbnail || '/images/default-thumbnail.png'}
+          src={recruitment.thumbnail || defalutImage}
           alt={recruitment.title}
           className="h-full w-full object-cover"
         />

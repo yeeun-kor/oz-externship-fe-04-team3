@@ -1,5 +1,5 @@
-import { Sparkles } from 'lucide-react'
 import type { Recruitment } from '@/types/recruitment'
+import { Sparkles } from 'lucide-react'
 import RecommendedCard from './RecommendedCard'
 
 interface Props {
@@ -29,7 +29,7 @@ export default function RecommendedSection({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {recommended.map((item, index) => (
+        {recommended?.map((item, index) => (
           <RecommendedCard
             key={item.id ?? `recommended-${index}`}
             recruitment={item}

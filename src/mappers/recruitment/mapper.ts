@@ -1,7 +1,8 @@
+import type { SelectData } from '@/components/common/Select'
 import type {
   Recruitment,
-  RecruitmentApiItem,
   RecruitmentApiDetail,
+  RecruitmentApiItem,
 } from '@/types/recruitment'
 
 export const mapRecruitmentItem = (data: RecruitmentApiItem): Recruitment => {
@@ -67,3 +68,10 @@ export const mapRecruitmentDetail = (
     attachments: data.files ?? [],
   }
 }
+export const sortDataRecruitment: SelectData = [
+  { itemValue: 'default', itemText: '정렬 기본순' },
+  { itemValue: 'latest', itemText: '최신순' },
+  { itemValue: 'oldest', itemText: '오래된순' },
+  { itemValue: 'most_views', itemText: '조회수 높은순' },
+  { itemValue: 'most_bookmarks', itemText: '북마크 높은순' },
+]

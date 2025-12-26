@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from 'react'
 import { getRecruitments } from '@/api/recruitments'
+import { mapRecruitmentItem } from '@/mappers/recruitment/mapper'
 import type { Recruitment } from '@/types/recruitment'
+import type { MyRecruitmentParams } from '@/types/myRecruitment'
 
 export function useRecruitments() {
   const [searchKeyword, setSearchKeyword] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('전체 카테고리')
-  const [selectedSort, setSelectedSort] = useState('최신순')
+  const [selectedTag, setSelectedTag] = useState('')
+  const [selectedSort, setSelectedSort] =
+    useState<MyRecruitmentParams['sort']>()
   const [visibleCount, setVisibleCount] = useState(10)
   const [recruitments, setRecruitments] = useState<Recruitment[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -14,8 +17,28 @@ export function useRecruitments() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        const data = await getRecruitments()
-        setRecruitments(Array.isArray(data) ? data : [])
+        const params: MyRecruitmentParams = {}
+
+        // 검색어가 있으면 추가
+        if (searchKeyword.trim()) {
+          params.search = searchKeyword
+        }
+
+        // 태그가 있으면 추가
+        if (selectedTag && selectedTag !== '전체 태그') {
+          params.tags = [selectedTag]
+        }
+
+        // 정렬 옵션이 있으면 추가
+        if (selectedSort) {
+          params.sort = selectedSort
+        }
+
+        const data = await getRecruitments(params)
+        // API 응답이 paginated response 형태인 경우 처리
+        const results = data?.results ?? []
+        const mappedData = results.map(mapRecruitmentItem)
+        setRecruitments(mappedData)
       } catch {
         setRecruitments([])
       } finally {
@@ -24,7 +47,7 @@ export function useRecruitments() {
     }
 
     fetchData()
-  }, [])
+  }, [searchKeyword, selectedTag, selectedSort])
 
   const filteredAndSorted = useMemo(() => {
     return recruitments
@@ -44,7 +67,7 @@ export function useRecruitments() {
 
   return {
     searchKeyword,
-    selectedCategory,
+    selectedTag,
     selectedSort,
     displayedRecruitments,
     filteredAndSorted,
@@ -55,12 +78,12 @@ export function useRecruitments() {
       setSearchKeyword(value)
       setVisibleCount(10)
     },
-    handleCategoryChange: (value: string) => {
-      setSelectedCategory(value)
+    handleTagChange: (value: string) => {
+      setSelectedTag(value)
       setVisibleCount(10)
     },
     handleSortChange: (value: string) => {
-      setSelectedSort(value)
+      setSelectedSort(value as MyRecruitmentParams['sort'])
       setVisibleCount(10)
     },
     handleLoadMore: () => {

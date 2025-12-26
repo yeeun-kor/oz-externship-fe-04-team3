@@ -1,5 +1,6 @@
-import { Bookmark, Calendar, Eye, User } from 'lucide-react'
+import defalutImage from '@/assets/images/DefaultImage.png'
 import type { Recruitment } from '@/types/recruitment'
+import { Bookmark, Calendar, Eye, User } from 'lucide-react'
 
 interface RecruitmentCardProps {
   recruitment: Recruitment
@@ -37,7 +38,7 @@ export default function RecruitmentCard({
         <div className="flex h-40 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-32 sm:w-48">
           {recruitment.thumbnailType === 'image' ? (
             <img
-              src={recruitment.thumbnail}
+              src={recruitment.thumbnail || defalutImage}
               alt={recruitment.title}
               className="h-full w-full object-cover"
             />

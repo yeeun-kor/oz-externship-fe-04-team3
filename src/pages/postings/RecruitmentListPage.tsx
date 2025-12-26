@@ -1,12 +1,15 @@
 import { getUserRecommendsLecturesApi } from '@/api/lecture'
+import { getRecruitmentTags } from '@/api/recruitmentTag'
+import { Select } from '@/components/common'
 import PublicBanner from '@/components/postings/recruitment/PublicBanner'
 import RecommendedSection from '@/components/postings/recruitment/RecommendedSection'
 import RecruitmentCard from '@/components/postings/recruitment/RecruitmentCard'
 import { useRecruitments } from '@/hooks/recruitment/useRecruitments'
+import { sortDataRecruitment } from '@/mappers/recruitment/mapper'
 import { useAuthStore } from '@/store/userStore'
-import { QueryClient } from '@tanstack/react-query'
-import { ArrowUp, Plus, Search, List } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { QueryClient, useQuery } from '@tanstack/react-query'
+import { ArrowDownWideNarrow, ArrowUp, List, Plus, Search } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function RecruitmentListPage() {
@@ -18,17 +21,21 @@ export default function RecruitmentListPage() {
 
   const {
     searchKeyword,
-    selectedCategory,
+    selectedTag,
     selectedSort,
-    recommendedRecruitments,
-    displayedRecruitments,
     filteredAndSorted,
     hasMore,
     handleSearchChange,
-    handleCategoryChange,
+    handleTagChange,
     handleSortChange,
     handleLoadMore,
   } = useRecruitments()
+
+  // 태그 목록 가져오기
+  const { data: tagsData } = useQuery({
+    queryKey: ['recruitment-tags'],
+    queryFn: () => getRecruitmentTags({ page_size: 100 }),
+  })
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300)
@@ -53,17 +60,13 @@ export default function RecruitmentListPage() {
     prefetchData()
   }, [])
 
-  const allCategories = [
-    'AI/인공지능',
-    '응용 AI',
-    'IT/프로그래밍',
-    '게임 개발',
-    '데이터 사이언스',
-    'IT',
-    '하드웨어',
-    '디자인',
-  ]
+  const allTags = tagsData?.results ?? []
 
+  // 랜덤 3개 추천 공고 선택
+  const recommendRecruiment = useMemo(() => {
+    if (filteredAndSorted.length === 0) return []
+    return [...filteredAndSorted].sort(() => Math.random() - 0.5).slice(0, 3)
+  }, [filteredAndSorted])
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl p-4 md:p-6">
@@ -74,7 +77,6 @@ export default function RecruitmentListPage() {
               새로운 스터디 팀원을 찾거나 관심있는 스터디에 참여해보세요!
             </p>
           </div>
-
           {isLoggedIn && (
             <div className="flex gap-2">
               <button
@@ -98,7 +100,7 @@ export default function RecruitmentListPage() {
         {isLoggedIn && (
           <RecommendedSection
             userName={user?.name ?? '사용자'}
-            recommended={recommendedRecruitments}
+            recommended={recommendRecruiment}
             onClick={handleRecruitmentClick}
           />
         )}
@@ -120,16 +122,18 @@ export default function RecruitmentListPage() {
           <div className="flex flex-col gap-3 sm:flex-row md:gap-4">
             <div className="flex-1">
               <label className="mb-2 block text-xs text-gray-600 md:text-sm">
-                카테고리
+                태그
               </label>
               <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
+                value={selectedTag}
+                onChange={(e) => handleTagChange(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 md:px-4 md:text-base"
               >
-                <option>전체 카테고리</option>
-                {allCategories.map((c) => (
-                  <option key={c}>{c}</option>
+                <option value="">전체 태그</option>
+                {allTags.map((tag) => (
+                  <option key={tag.id} value={tag.name}>
+                    {tag.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -138,15 +142,16 @@ export default function RecruitmentListPage() {
               <label className="mb-2 block text-xs text-gray-600 md:text-sm">
                 정렬
               </label>
-              <select
-                value={selectedSort}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 md:px-4 md:text-base"
-              >
-                <option>최신순</option>
-                <option>조회 많은 순</option>
-                <option>북마크 많은 순</option>
-              </select>
+              <Select
+                name="sort"
+                icon={<ArrowDownWideNarrow />}
+                value={selectedSort ?? 'default'}
+                data={sortDataRecruitment}
+                placeHolder="정렬"
+                onValueChange={(value) => {
+                  handleSortChange(value === 'default' ? '' : value)
+                }}
+              />
             </div>
           </div>
         </div>
@@ -162,7 +167,7 @@ export default function RecruitmentListPage() {
         ) : (
           <>
             <div className="space-y-4">
-              {displayedRecruitments.map((item) => (
+              {filteredAndSorted.map((item) => (
                 <RecruitmentCard
                   key={item.id}
                   recruitment={item}
