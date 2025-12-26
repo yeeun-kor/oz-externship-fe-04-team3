@@ -1,3 +1,5 @@
+
+
 ## 📖 프로젝트 소개
 
 ### 온라인 강의와 스터디 문화를 결합한 IT 학습 플랫폼 📚
@@ -29,14 +31,13 @@ StudyHub는 이러한 문제 인식에서 출발하여 온라인 강의를 '완�
 
 ## 🖥️ 서비스 소개
 
-| 스터디 구인 공고 목록 1 | 스터디 구인 공고 필터링 | 구인 공고 상세보기 |
+| 스터디 구인 공고 | 구인 공고 검색 및 필터링 | 구인 공고 상세보기 및 지원하기 |
 | --- | --- | --- |
-| ![스터디 구인 공고 목록](https://github.com/user-attachments/assets/0834e1d3-efe6-413b-b96b-b5e80ea0e896)|  |  |
+| ![스터디 구인 공고 목록](https://github.com/user-attachments/assets/0834e1d3-efe6-413b-b96b-b5e80ea0e896)|![공고 검색 및 필터링](https://github.com/user-attachments/assets/22b20464-a041-4115-b035-853c4040dc04)|![공고 상세보기 및 지원하기](https://github.com/user-attachments/assets/9bc622ed-04de-490f-aed5-5cb5ad7171a2)|
 
-| 구인 공고 북마크 및 링크 공유 | 구인 공고 지원하기 | 구인 공고 삭제|
+| 구인 공고 북마크 및 링크 공유 |구인공고 삭제|알림창 조회|
 | --- | --- | --- |
-| ![구인 공고 공유 및 북마크](https://github.com/user-attachments/assets/e173e0b0-0092-452e-a66d-3bba2815f781)|  ![공고 지원서 작성](https://github.com/user-attachments/assets/5203f2ae-519a-4c2a-a8a6-480718e74455)|![공고 삭제](https://github.com/user-attachments/assets/bd44270c-a856-46ff-bdc2-a0c8cd77d5ae)
-|
+|![링크공유 및 북마크](https://github.com/user-attachments/assets/e2826808-f8a0-45e7-9e7e-2bd1f8df2b70)|![공고 삭제](https://github.com/user-attachments/assets/bd44270c-a856-46ff-bdc2-a0c8cd77d5ae)|![알림조회](https://github.com/user-attachments/assets/478b2464-425f-44ff-9541-03ee78942c23)|
 
 | 지원 내역 조회 | 지원 내역 거절 승인 | 구인 공고 수정 |
 | --- | --- | --- |
@@ -53,6 +54,7 @@ StudyHub는 이러한 문제 인식에서 출발하여 온라인 강의를 '완�
 | 강의 검색 | 강의 필터링 | 강의 리뷰 조회 및 강의 보러가기 |
 | --- | --- | --- |
 |![강의검색](https://github.com/user-attachments/assets/7ad78ae3-8f21-4404-a8f0-42b1dc2b0a03)|![강의필터링](https://github.com/user-attachments/assets/d2b8740d-a395-43ef-aa52-5185693f12b5)|![강의리뷰](https://github.com/user-attachments/assets/18d38c94-7335-406c-866c-cec439cf5db3)|
+
 
 ---
 
