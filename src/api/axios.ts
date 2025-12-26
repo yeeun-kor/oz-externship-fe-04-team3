@@ -31,60 +31,50 @@ axiosInstance.interceptors.response.use(
   async function (error) {
     const originalRequest = error.config
     const status = error.response?.status
-    const { accessToken } = useAuthStore.getState()
     const isRefreshCall = originalRequest?.url?.includes(
       '/v1/accounts/token/refresh'
     )
 
+    // 네트워크 에러 처리
     if (!error.response) {
       showToast.error('네트워크 오류', '네트워크 연결을 확인해주세요.')
       return Promise.reject(error)
     }
 
-    if (status === 401 && !accessToken) {
-      return Promise.reject(error)
-    }
-
+    // 401: 토큰 갱신 후 재시도
     if (status === 401) {
-      if (isRefreshCall || originalRequest._retry) {
+      if (isRefreshCall) {
+        useAuthStore.getState().clearAuth?.()
+        return Promise.reject(error)
+      }
+
+      if (originalRequest._retry) {
         useAuthStore.getState().clearAuth?.()
         return Promise.reject(error)
       }
 
       originalRequest._retry = true
-
       try {
         if (!refreshPromise) {
           refreshPromise = getAccessTokenApi()
         }
-
-        const newAccessToken = await refreshPromise
+        const accessToken = await refreshPromise
         refreshPromise = null
-
-        useAuthStore.getState().setAccessToken(newAccessToken)
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-
+        useAuthStore.getState().setAccessToken(accessToken)
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return axiosInstance(originalRequest)
       } catch (refreshError) {
         refreshPromise = null
-        useAuthStore.getState().clearAuth?.()
-        return Promise.reject(refreshError)
+
+        return Promise.reject(error)
       }
-    }
-
-    if (status === 404) {
-      return Promise.reject(error)
-    }
-
-    if (status === 403 || status === 409 || status === 500) {
+    } else if (status === 403 || status === 409 || status === 500) {
       const errorMessage =
         error.response?.data?.error_detail ??
         '요청 처리 중 오류가 발생했습니다.'
-
       showToast.error('오류', errorMessage)
       return Promise.reject(error)
     }
-
     return Promise.reject(error)
   }
 )
