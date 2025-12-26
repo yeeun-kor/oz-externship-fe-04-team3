@@ -50,10 +50,13 @@ export function useApplicationForm(recruitmentId: string) {
 
     try {
       setIsSubmitting(true)
-      await postApplication({
-        recruitmentId,
-        content: JSON.stringify(formData),
-        contact: formData.availableTime,
+      await postApplication(recruitmentId, {
+        self_introduction: formData.introduction,
+        motivation: formData.motivation,
+        objective: formData.goal,
+        available_time: formData.availableTime,
+        has_study_experience: formData.hasExperience,
+        study_experience: formData.experienceDescription || undefined,
       })
       return true
     } finally {

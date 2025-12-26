@@ -53,15 +53,22 @@ export const deleteRecruitment = async (id: string): Promise<void> => {
 }
 
 export interface ApplicationData {
-  recruitmentId: string
-  content: string
-  contact?: string
+  self_introduction: string
+  motivation: string
+  objective: string
+  available_time: string
+  has_study_experience: boolean
+  study_experience?: string
 }
 
 export const postApplication = async (
+  recruitmentUuid: string,
   payload: ApplicationData
 ): Promise<void> => {
-  await axiosInstance.post('/v1/applications', payload)
+  await axiosInstance.post(
+    `/v1/recruitments/${recruitmentUuid}/applications`,
+    payload
+  )
 }
 
 export const getMyRecruitments = async (): Promise<
