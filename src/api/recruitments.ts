@@ -5,12 +5,15 @@ import type { Recruitment, RecruitmentApiDetail } from '@/types/recruitment'
 
 export const getRecruitments = async (params: MyRecruitmentParams = {}) => {
   // 객체타입 Record<키값:키밸류>
-  const queryParams: Record<string, string | number> = {}
+  const queryParams: Record<string, string | number | string[]> = {}
 
   if (params.page) queryParams.page = params.page
   if (params.page_size) queryParams.page_size = params.page_size
   if (params.search) queryParams.search = params.search
   if (params.sort) queryParams.sort = params.sort
+  if (params.tags && params.tags.length > 0) {
+    queryParams.tags = params.tags.join(',')
+  }
 
   const { data } = await axiosInstance.get('/v1/recruitments', {
     params: queryParams,

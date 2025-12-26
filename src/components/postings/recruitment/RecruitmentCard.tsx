@@ -1,4 +1,4 @@
-import defalutImage from '@/assets/images/DefaultImage.png'
+import defalutImage from '@/assets/images/defaultImage.png'
 import type { Recruitment } from '@/types/recruitment'
 import { Bookmark, Calendar, Eye, User } from 'lucide-react'
 
