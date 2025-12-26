@@ -1,3 +1,4 @@
+import { logoutApi } from '@/api/userInformation'
 import type { UserInformation } from '@/types/userInformation'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -36,6 +37,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ user: user, loginState: 'USER' })
       },
       clearAuth() {
+        logoutApi()
         set({
           user: null,
           accessToken: null,

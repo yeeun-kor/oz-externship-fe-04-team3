@@ -1,5 +1,5 @@
 import type { Recruitment } from '@/types/recruitment'
-import { Users, DollarSign, Calendar, GraduationCap } from 'lucide-react'
+import { Calendar, DollarSign, GraduationCap, Users } from 'lucide-react'
 
 interface Props {
   recruitment: Recruitment
@@ -44,7 +44,9 @@ export default function DetailInfo({ recruitment }: Props) {
         <DollarSign className="mx-auto mb-2 h-6 w-6 text-gray-400" />
         <p className="mb-1 text-xs text-gray-600">예상 비용</p>
         <p className="font-bold">
-          {recruitment.estimatedFee ? `${recruitment.estimatedFee}원` : '미정'}
+          {recruitment.estimatedFee
+            ? `${recruitment.estimatedFee.toLocaleString('ko-KR')}원`
+            : '미정'}
         </p>
       </div>
 

@@ -162,7 +162,7 @@ export function useWriteRecruitmentForm(
     let estimatedFeeValue = estimatedFee
     if (estimatedFeeValue === '') {
       const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-      estimatedFeeValue = String(fallback)
+      estimatedFeeValue = fallback.toString()
       setEstimatedFee(estimatedFeeValue)
     }
 

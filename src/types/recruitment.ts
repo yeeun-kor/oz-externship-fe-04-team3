@@ -43,7 +43,7 @@ export interface RecruitmentApiItem {
   thumbnail_img_url?: string
   expected_headcount?: number
   close_at?: string
-  estimated_fee?: string
+  estimated_fee?: number
   views_count?: number
   bookmark_count?: number
   lectures?: Array<{
@@ -77,7 +77,7 @@ export interface RecruitmentApiDetail {
   participants?: number
   close_at?: string
   created_at?: string
-  estimated_fee?: string
+  estimated_fee?: number
   views_count?: number
   bookmark_count?: number
   study_type?: string
@@ -114,7 +114,7 @@ export interface Recruitment {
   maxParticipants: number
   participants?: number
   deadline?: string
-  estimatedFee?: string
+  estimatedFee?: number
   studyType?: string
   authorId?: number
   author?: { id: number; name: string }

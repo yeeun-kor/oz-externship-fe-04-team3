@@ -219,7 +219,7 @@ function ExtraInfoSection({
           onBlur={() => {
             if (estimatedFee !== '') return
             const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-            setEstimatedFee(String(fallback))
+            setEstimatedFee(fallback.toString())
           }}
         />
       </div>
@@ -390,8 +390,8 @@ export default function WriteForm({
   useEffect(() => {
     if (!state.studyGroupId) return
     const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-    if (state.estimatedFee !== String(fallback)) {
-      setEstimatedFee(String(fallback))
+    if (state.estimatedFee !== fallback.toString()) {
+      setEstimatedFee(fallback.toString())
     }
   }, [
     state.studyGroupId,
@@ -405,8 +405,8 @@ export default function WriteForm({
     if (!state.studyGroupId) return
     if (prevGroupIdRef.current !== state.studyGroupId) {
       const fallback = totalLecturePrice > 0 ? totalLecturePrice : 0
-      if (state.estimatedFee !== String(fallback)) {
-        setEstimatedFee(String(fallback))
+      if (state.estimatedFee !== fallback.toString()) {
+        setEstimatedFee(fallback.toString())
       }
       prevGroupIdRef.current = state.studyGroupId
     }
@@ -439,10 +439,10 @@ export default function WriteForm({
     setTitle(detail.title)
     setContent(detail.content)
     setEstimatedFee(
-      detail.estimated_fee !== undefined ? String(detail.estimated_fee) : ''
+      detail.estimated_fee !== undefined ? detail.estimated_fee.toString() : ''
     )
     setExpectedHeadcount(
-      detail.expected_headcount ? String(detail.expected_headcount) : ''
+      detail.expected_headcount ? detail.expected_headcount.toString() : ''
     )
     if (detail.files?.length) {
       const presetFiles = detail.files.map(
